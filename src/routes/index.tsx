@@ -408,11 +408,11 @@ function Dashboard() {
         </section>
 
         {/* Tabs: use cases / activity / roadmap */}
-        <Tabs defaultValue="usecases">
+        <Tabs defaultValue="usecases" id="roadmap">
           <TabsList>
-            <TabsTrigger value="usecases">Use cases</TabsTrigger>
-            <TabsTrigger value="activity">Activity</TabsTrigger>
-            <TabsTrigger value="roadmap">Roadmap</TabsTrigger>
+            <TabsTrigger value="usecases" className="data-[state=active]:bg-card data-[state=active]:text-foreground">Use cases</TabsTrigger>
+            <TabsTrigger value="activity" className="data-[state=active]:bg-card data-[state=active]:text-foreground">Activity</TabsTrigger>
+            <TabsTrigger value="roadmap" className="data-[state=active]:bg-card data-[state=active]:text-foreground">Roadmap</TabsTrigger>
           </TabsList>
 
           <TabsContent value="usecases" className="mt-4">

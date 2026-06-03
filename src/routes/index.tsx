@@ -530,7 +530,7 @@ function Dashboard() {
               <a href="#" className="hover:text-foreground">Terms</a>
             </nav>
           </div>
-          <div className="border-t px-6 py-3 text-center text-xs text-muted-foreground">
+          <div className="rounded-b-lg bg-neutral-800 px-6 py-3 text-center text-xs text-neutral-300">
             <Activity className="mr-1 inline h-3 w-3" />
             © {new Date().getFullYear()} Measure it if you can. All rights reserved.
           </div>

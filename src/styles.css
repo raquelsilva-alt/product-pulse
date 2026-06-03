@@ -46,7 +46,7 @@
 :root {
   --radius: 0.5rem;
   /* Deep navy page background, white card surfaces, orange accent — IMRAVIZ reference */
-  --background: oklch(0.21 0.04 265);
+  --background: oklch(0.98 0.005 250);
   --foreground: oklch(0.18 0.03 260);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.18 0.03 260);

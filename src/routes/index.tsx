@@ -510,11 +510,33 @@ function Dashboard() {
           </TabsContent>
         </Tabs>
 
-        <footer className="pt-2 text-center text-xs text-muted-foreground">
-          <Activity className="mr-1 inline h-3 w-3" />
-          Mock data for PM reporting · GraphTruth Q2 2026
-        </footer>
       </main>
+
+        {/* Footer */}
+        <footer className="rounded-b-lg border border-t-0 bg-card">
+          <div className="flex flex-col gap-4 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2 text-sm">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <span className="font-serif font-semibold">Measure it if you can</span>
+              <span className="text-muted-foreground">— Graph RAG for grounded answers</span>
+            </div>
+            <nav className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
+              <a href="#" className="hover:text-foreground">About</a>
+              <a href="#" className="hover:text-foreground">Product</a>
+              <a href="#" className="hover:text-foreground">Pricing</a>
+              <a href="#" className="hover:text-foreground">Docs</a>
+              <a href="#" className="hover:text-foreground">Contact</a>
+              <a href="#" className="hover:text-foreground">Privacy</a>
+              <a href="#" className="hover:text-foreground">Terms</a>
+            </nav>
+          </div>
+          <div className="border-t px-6 py-3 text-center text-xs text-muted-foreground">
+            <Activity className="mr-1 inline h-3 w-3" />
+            © {new Date().getFullYear()} Measure it if you can. All rights reserved.
+          </div>
+        </footer>
+      </div>
     </div>
   );
 }
+

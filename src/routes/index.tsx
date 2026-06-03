@@ -206,28 +206,57 @@ function Dashboard() {
   const conversion = ((pipelineData[4].value / totalPipeline) * 100).toFixed(2);
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b bg-card/50 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-          <div className="flex items-center gap-3">
-            <div
-              className="flex h-9 w-9 items-center justify-center rounded-lg text-primary-foreground"
-              style={{ background: "var(--gradient-primary)" }}
-            >
-              <Sparkles className="h-5 w-5" />
+    <div className="min-h-screen bg-background py-6 sm:py-10">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        {/* Top user bar */}
+        <div className="rounded-t-lg border border-b-0 bg-card">
+          <div className="flex items-center justify-between gap-4 px-5 py-3">
+            <div className="flex items-center gap-3">
+              <img
+                src="https://i.pravatar.cc/80?img=12"
+                alt="User avatar"
+                className="h-9 w-9 rounded-full object-cover ring-2 ring-primary/30"
+              />
+              <div className="leading-tight">
+                <div className="text-sm font-medium">Alex Morgan</div>
+                <div className="text-xs text-muted-foreground">Product Manager · Measure it if you can</div>
+              </div>
             </div>
-            <div>
-              <h1 className="text-lg font-semibold tracking-tight">GraphTruth — Product Pulse</h1>
-              <p className="text-xs text-muted-foreground">Graph RAG for hallucination-free chatbots · Q2 2026 · Updated 2 min ago</p>
-            </div>
+            <nav className="hidden items-center gap-7 text-sm md:flex">
+              <a className="font-medium text-foreground" href="#dashboard">Dashboard</a>
+              <a className="text-muted-foreground hover:text-foreground" href="#usecases">Use cases</a>
+              <a className="text-muted-foreground hover:text-foreground" href="#roadmap">Roadmap</a>
+              <a className="text-muted-foreground hover:text-foreground" href="#forecast">Forecast</a>
+            </nav>
+            <Badge variant="secondary" className="hidden bg-accent text-accent-foreground sm:inline-flex">
+              Q2 2026
+            </Badge>
           </div>
-          <Badge variant="secondary" className="hidden sm:inline-flex">
-            Previous quarter → Next-quarter forecast
-          </Badge>
         </div>
-      </header>
 
-      <main className="mx-auto max-w-7xl space-y-6 px-6 py-8">
+        {/* Inner header */}
+        <header className="border-x border-b bg-card/80 backdrop-blur">
+          <div className="flex items-center justify-between px-6 py-5">
+            <div className="flex items-center gap-3">
+              <div
+                className="flex h-9 w-9 items-center justify-center rounded-lg text-primary-foreground"
+                style={{ background: "var(--gradient-primary)" }}
+              >
+                <Sparkles className="h-5 w-5" />
+              </div>
+              <div>
+                <h1 className="font-serif text-xl font-semibold tracking-tight">Measure it if you can</h1>
+                <p className="text-xs text-muted-foreground">Graph RAG for hallucination-free chatbots · Product Pulse · Updated 2 min ago</p>
+              </div>
+            </div>
+            <Badge variant="secondary" className="hidden sm:inline-flex">
+              Previous quarter → Next-quarter forecast
+            </Badge>
+          </div>
+        </header>
+
+        <main id="dashboard" className="space-y-6 border-x bg-card px-6 py-8">
+
         {/* KPIs */}
         <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Kpi icon={ThumbsUp} label="Positive feedback" value="4,820" delta={28} hint="Thumbs-up on agent answers, this quarter" />

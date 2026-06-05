@@ -156,15 +156,12 @@ function RoadStatusBadge({ status }: { status: RoadStatus }) {
   );
 }
 
-function RoadEdge({ status }: { status: RoadStatus }) {
-  const map: Record<RoadStatus, string> = {
-    Done: "border-l-emerald-500",
-    "In Progress": "border-l-sky-500",
-    Planned: "border-l-amber-500",
-    Backlog: "border-l-neutral-300",
-  };
-  return map[status];
-}
+const ROAD_EDGE: Record<RoadStatus, string> = {
+  Done: "border-l-emerald-500",
+  "In Progress": "border-l-sky-500",
+  Planned: "border-l-amber-500",
+  Backlog: "border-l-neutral-300",
+};
 
 // ---------- Component ----------
 

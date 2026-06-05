@@ -388,7 +388,7 @@ function Dashboard() {
                   {col.items.map((it) => (
                     <div
                       key={it.title}
-                      className={`rounded-sm border border-neutral-200 border-l-2 ${RoadEdge(it.status)} bg-white px-3 py-2.5`}
+                      className={`rounded-sm border border-neutral-200 border-l-2 ${ROAD_EDGE[it.status]} bg-white px-3 py-2.5`}
                     >
                       <p className="text-sm font-medium text-neutral-900">{it.title}</p>
                       <div className="mt-1.5 flex items-center gap-2">

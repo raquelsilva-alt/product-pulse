@@ -15,11 +15,11 @@ import {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Cisco IT · AI Operations Platform — Product Health Dashboard" },
+      { title: "Measure it · AI Operations Platform — Product Health Dashboard" },
       {
         name: "description",
         content:
-          "Cisco IT AI Operations Platform — Product Health Dashboard. Traffic, pipeline, use cases, roadmap and Q3 2026 forecast in one view.",
+          "Measure it · AI Operations Platform — Product Health Dashboard. Traffic, pipeline, use cases, roadmap and Q3 2026 forecast in one view.",
       },
     ],
   }),
@@ -174,7 +174,7 @@ function Dashboard() {
           <div className="flex items-start justify-between">
             <div>
               <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-neutral-500">
-                Cisco IT · AI Operations Platform
+                Measure it · AI Operations Platform
               </p>
               <h1 className="mt-1 text-2xl font-semibold tracking-tight text-neutral-900">
                 Product health dashboard
@@ -457,7 +457,7 @@ function Dashboard() {
         </section>
 
         <footer className="border-t border-neutral-200 pt-4 text-center text-xs text-neutral-400">
-          Cisco IT · AI Operations Platform · Product Health Dashboard · Q2 2026
+          Measure it · AI Operations Platform · Product Health Dashboard · Q2 2026
         </footer>
       </div>
     </div>

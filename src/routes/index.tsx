@@ -1,542 +1,465 @@
 import { createFileRoute } from "@tanstack/react-router";
 import {
-  Activity,
-  ArrowDownRight,
-  ArrowUpRight,
-  Boxes,
-  Layers,
-  Network,
-  ShieldCheck,
-  Sparkles,
-  ThumbsUp,
-  TrendingUp,
-} from "lucide-react";
-import {
   Area,
   AreaChart,
   Bar,
   BarChart,
   CartesianGrid,
-  Cell,
   Legend,
-  Line,
-  LineChart,
-  Pie,
-  PieChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "GraphTruth — Product Health, Pipeline & Forecast" },
+      { title: "Cisco IT · AI Operations Platform — Product Health Dashboard" },
       {
         name: "description",
         content:
-          "Graph RAG dashboard for customer-support chatbots: hallucination reduction, SRs solved & avoided, positive feedback, roadmap and next-quarter forecast.",
-      },
-      { property: "og:title", content: "GraphTruth — Product Pulse" },
-      {
-        property: "og:description",
-        content: "Graph RAG for hallucination-free chatbots — PM dashboard with pipeline, activity, roadmap and forecast.",
+          "Cisco IT AI Operations Platform — Product Health Dashboard. Traffic, pipeline, use cases, roadmap and Q3 2026 forecast in one view.",
       },
     ],
   }),
   component: Dashboard,
 });
 
-// ——— Mock data: previous quarter (W1–W8) → next-quarter forecast (W9–W12) ———
-const trafficData = [
-  { week: "W1", solved: 980, avoided: 540, halluc: 5.8, forecastSolved: null as number | null, forecastAvoided: null as number | null },
-  { week: "W2", solved: 1120, avoided: 640, halluc: 5.2, forecastSolved: null, forecastAvoided: null },
-  { week: "W3", solved: 1280, avoided: 760, halluc: 4.5, forecastSolved: null, forecastAvoided: null },
-  { week: "W4", solved: 1410, avoided: 870, halluc: 3.9, forecastSolved: null, forecastAvoided: null },
-  { week: "W5", solved: 1560, avoided: 980, halluc: 3.3, forecastSolved: null, forecastAvoided: null },
-  { week: "W6", solved: 1690, avoided: 1090, halluc: 2.8, forecastSolved: null, forecastAvoided: null },
-  { week: "W7", solved: 1820, avoided: 1180, halluc: 2.4, forecastSolved: null, forecastAvoided: null },
-  { week: "W8", solved: 1980, avoided: 1290, halluc: 2.1, forecastSolved: 1980, forecastAvoided: 1290 },
-  { week: "W9", solved: null as number | null, avoided: null as number | null, halluc: 1.8, forecastSolved: 2140, forecastAvoided: 1430 },
-  { week: "W10", solved: null, avoided: null, halluc: 1.6, forecastSolved: 2310, forecastAvoided: 1580 },
-  { week: "W11", solved: null, avoided: null, halluc: 1.4, forecastSolved: 2490, forecastAvoided: 1740 },
-  { week: "W12", solved: null, avoided: null, halluc: 1.2, forecastSolved: 2680, forecastAvoided: 1910 },
+// ---------- Data ----------
+
+const KPIS = [
+  { label: "Active use cases", value: "12", delta: "+2 vs Q1" },
+  { label: "Monthly requests", value: "4,700", delta: "+4.7% vs Q1 avg" },
+  { label: "Active users", value: "280", delta: "+6.9% vs Q1" },
+  { label: "Resolution rate", value: "89%", delta: "+3 pp vs Q1" },
 ];
 
-const pipelineData = [
-  { stage: "Prospects", value: 2840, color: "var(--chart-1)" },
-  { stage: "Pilots", value: 612, color: "var(--chart-2)" },
-  { stage: "Integrated", value: 284, color: "var(--chart-3)" },
-  { stage: "Production", value: 138, color: "var(--chart-4)" },
-  { stage: "Expanded", value: 47, color: "var(--chart-5)" },
+const TRAFFIC = [
+  { m: "Oct", actual: 3200 },
+  { m: "Nov", actual: 3450 },
+  { m: "Dec", actual: 3100 },
+  { m: "Jan", actual: 3800 },
+  { m: "Feb", actual: 4100 },
+  { m: "Mar", actual: 4500 },
+  { m: "Apr", actual: 4600 },
+  { m: "May", actual: 4900 },
+  { m: "Jun", actual: 4700, forecast: 4700 },
+  { m: "Jul", forecast: 5100 },
+  { m: "Aug", forecast: 5400 },
+  { m: "Sep", forecast: 5650 },
 ];
 
-const hallucReduction = [
-  { bot: "Billing", baseline: 14.2, withGraph: 2.1 },
-  { bot: "Tier-1 support", baseline: 12.8, withGraph: 1.8 },
-  { bot: "Troubleshoot", baseline: 16.5, withGraph: 2.9 },
-  { bot: "Account mgmt", baseline: 11.4, withGraph: 1.6 },
-  { bot: "Onboarding", baseline: 9.8, withGraph: 1.4 },
+const PIPELINE = [
+  { stage: "Registered", value: 420 },
+  { stage: "Onboarded", value: 341 },
+  { stage: "Active (30d)", value: 280 },
+  { stage: "Power users", value: 95 },
+  { stage: "Champions", value: 32 },
 ];
 
-const graphCoverage = [
-  { week: "W1", coverage: 38, accuracy: 74 },
-  { week: "W2", coverage: 44, accuracy: 78 },
-  { week: "W3", coverage: 51, accuracy: 81 },
-  { week: "W4", coverage: 58, accuracy: 84 },
-  { week: "W5", coverage: 65, accuracy: 87 },
-  { week: "W6", coverage: 71, accuracy: 90 },
-  { week: "W7", coverage: 78, accuracy: 92 },
-  { week: "W8", coverage: 84, accuracy: 94 },
+type Status = "Live" | "Beta" | "Pilot";
+const USE_CASES: { name: string; status: Status; count: number; growth: string; isNew?: boolean }[] = [
+  { name: "IT service request", status: "Live", count: 1420, growth: "+12%" },
+  { name: "Knowledge base Q&A", status: "Live", count: 890, growth: "+8%" },
+  { name: "Incident triage", status: "Live", count: 670, growth: "+22%" },
+  { name: "HR policy assistant", status: "Live", count: 540, growth: "+5%" },
+  { name: "Contract review", status: "Live", count: 380, growth: "+18%" },
+  { name: "Meeting summary", status: "Live", count: 290, growth: "+31%" },
+  { name: "Code review assist", status: "Live", count: 180, growth: "+44%" },
+  { name: "Security alerts", status: "Live", count: 145, growth: "+9%" },
+  { name: "Vendor management", status: "Beta", count: 89, growth: "+61%" },
+  { name: "Procurement assist", status: "Beta", count: 67, growth: "+88%" },
+  { name: "Change management", status: "Pilot", count: 18, growth: "New", isNew: true },
+  { name: "Asset management", status: "Pilot", count: 12, growth: "New", isNew: true },
 ];
 
-const useCases = [
-  { name: "Billing & payments support", users: 4820, growth: 28 },
-  { name: "Tier-1 customer service", users: 4310, growth: 34 },
-  { name: "Technical troubleshooting", users: 3680, growth: 41 },
-  { name: "Account & subscription mgmt", users: 2940, growth: 22 },
-  { name: "Onboarding & how-to assistant", users: 2210, growth: 47 },
-  { name: "Internal agent copilot", users: 1580, growth: 62 },
+const MAX_USE_CASE = Math.max(...USE_CASES.map((u) => u.count));
+
+type RoadStatus = "Done" | "In Progress" | "Planned" | "Backlog";
+const ROADMAP: {
+  quarter: string;
+  badge: string;
+  dot: string;
+  items: { title: string; status: RoadStatus; tag: string }[];
+}[] = [
+  {
+    quarter: "Q2 · 2026",
+    badge: "CURRENT",
+    dot: "bg-sky-500",
+    items: [
+      { title: "Neo4j RAG optimization", status: "Done", tag: "INFRA" },
+      { title: "ITSM integration v2", status: "Done", tag: "INTEGRATION" },
+      { title: "Multi-modal input support", status: "In Progress", tag: "FEATURE" },
+    ],
+  },
+  {
+    quarter: "Q3 · 2026",
+    badge: "",
+    dot: "bg-amber-600",
+    items: [
+      { title: "Predictive ticket routing", status: "Planned", tag: "AI/ML" },
+      { title: "Self-service onboarding", status: "Planned", tag: "UX" },
+      { title: "Analytics dashboard v2", status: "Planned", tag: "FEATURE" },
+      { title: "Multi-agent orchestration", status: "Planned", tag: "AI/ML" },
+    ],
+  },
+  {
+    quarter: "Q4 · 2026",
+    badge: "",
+    dot: "bg-neutral-400",
+    items: [
+      { title: "Voice interface", status: "Backlog", tag: "FEATURE" },
+      { title: "Enterprise SSO enhance.", status: "Backlog", tag: "SECURITY" },
+      { title: "API rate limit mgmt", status: "Backlog", tag: "INFRA" },
+    ],
+  },
 ];
 
-const activityByDay = [
-  { day: "Mon", queries: 14200, grounded: 13820 },
-  { day: "Tue", queries: 15800, grounded: 15410 },
-  { day: "Wed", queries: 16400, grounded: 16020 },
-  { day: "Thu", queries: 15900, grounded: 15530 },
-  { day: "Fri", queries: 14100, grounded: 13760 },
-  { day: "Sat", queries: 6200, grounded: 6080 },
-  { day: "Sun", queries: 5100, grounded: 5010 },
+const FORECAST = [
+  { label: "Peak monthly requests", value: "5,650", sub: "September 2026" },
+  { label: "Projected active users", value: "338", sub: "+20.7% from Jun" },
+  { label: "New use case launches", value: "2", sub: "Routing + onboarding" },
+  { label: "Est. resolution rate", value: "92%", sub: "↑ +3 pp from Q2" },
 ];
 
-const roadmap = [
-  { quarter: "Q1 — Shipped", title: "Core Graph RAG engine", status: "done", progress: 100 },
-  { quarter: "Q1 — Shipped", title: "Zendesk connector", status: "done", progress: 100 },
-  { quarter: "Q2 — Current", title: "Real-time graph sync", status: "in-progress", progress: 72 },
-  { quarter: "Q2 — Current", title: "Enterprise SSO & audit logs", status: "in-progress", progress: 55 },
-  { quarter: "Q3 — Next", title: "Horizontal scalability / multi-tenant sharding", status: "planned", progress: 18 },
-  { quarter: "Q3 — Next", title: "Salesforce + Intercom connectors", status: "planned", progress: 8 },
-  { quarter: "Q4 — Future", title: "Self-serve graph builder", status: "planned", progress: 0 },
-  { quarter: "Q4 — Future", title: "On-prem deployment", status: "planned", progress: 0 },
-];
+// ---------- Helpers ----------
 
-const channelMix = [
-  { name: "Inbound", value: 38 },
-  { name: "Partner CRMs", value: 29 },
-  { name: "Outbound", value: 19 },
-  { name: "Community", value: 14 },
-];
-
-// ——— Helpers ———
-const fmt = (n: number) =>
-  n >= 1000 ? `${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}k` : `${n}`;
-
-function Kpi({
-  icon: Icon,
-  label,
-  value,
-  delta,
-  hint,
-  lowerIsBetter = false,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  value: string;
-  delta: number;
-  hint: string;
-  lowerIsBetter?: boolean;
-}) {
-  // For "lower is better" metrics (e.g. hallucination rate), a negative delta is good.
-  const isGood = lowerIsBetter ? delta < 0 : delta >= 0;
+function StatusBadge({ status }: { status: Status }) {
+  const styles: Record<Status, string> = {
+    Live: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    Beta: "bg-amber-50 text-amber-700 border-amber-200",
+    Pilot: "bg-neutral-100 text-neutral-600 border-neutral-200",
+  };
   return (
-    <Card className="relative overflow-hidden">
-      <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-1"
-        style={{ background: "var(--gradient-primary)" }}
-      />
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardDescription className="text-xs font-medium uppercase tracking-wider">
-            {label}
-          </CardDescription>
-          <div className="rounded-md bg-accent p-2 text-accent-foreground">
-            <Icon className="h-4 w-4" />
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="flex items-end justify-between gap-2">
-          <div className="text-3xl font-semibold tracking-tight">{value}</div>
-          <Badge
-            variant="secondary"
-            className={
-              isGood
-                ? "bg-success/15 text-success hover:bg-success/15"
-                : "bg-destructive/15 text-destructive hover:bg-destructive/15"
-            }
-          >
-            {delta >= 0 ? <ArrowUpRight className="mr-1 h-3 w-3" /> : <ArrowDownRight className="mr-1 h-3 w-3" />}
-            {Math.abs(delta)}%
-          </Badge>
-        </div>
-        <p className="mt-2 text-xs text-muted-foreground">{hint}</p>
-      </CardContent>
-    </Card>
+    <span
+      className={`inline-flex items-center rounded-sm border px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider ${styles[status]}`}
+    >
+      {status}
+    </span>
   );
 }
 
-const tooltipStyle = {
-  contentStyle: {
-    background: "var(--popover)",
-    border: "1px solid var(--border)",
-    borderRadius: "var(--radius-md)",
-    color: "var(--popover-foreground)",
-    fontSize: 12,
-  },
-  labelStyle: { color: "var(--muted-foreground)" },
+function RoadStatusBadge({ status }: { status: RoadStatus }) {
+  const styles: Record<RoadStatus, string> = {
+    Done: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    "In Progress": "bg-sky-50 text-sky-700 border-sky-200",
+    Planned: "bg-amber-50 text-amber-700 border-amber-200",
+    Backlog: "bg-neutral-100 text-neutral-600 border-neutral-200",
+  };
+  return (
+    <span
+      className={`inline-flex items-center rounded-sm border px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider ${styles[status]}`}
+    >
+      {status}
+    </span>
+  );
+}
+
+const ROAD_EDGE: Record<RoadStatus, string> = {
+  Done: "border-l-emerald-500",
+  "In Progress": "border-l-sky-500",
+  Planned: "border-l-amber-500",
+  Backlog: "border-l-neutral-300",
 };
 
+// ---------- Component ----------
+
 function Dashboard() {
-  const totalPipeline = pipelineData[0].value;
-  const conversion = ((pipelineData[4].value / totalPipeline) * 100).toFixed(2);
-
   return (
-    <div className="min-h-screen bg-background py-6 sm:py-10">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        {/* Top user bar */}
-        <div className="rounded-t-lg border border-b-0 bg-card">
-          <div className="flex items-center justify-between gap-4 px-5 py-3">
-            <div className="flex items-center gap-3">
-              <img
-                src="https://i.pravatar.cc/80?img=12"
-                alt="User avatar"
-                className="h-9 w-9 rounded-full object-cover ring-2 ring-primary/30"
-              />
-              <div className="leading-tight">
-                <div className="text-sm font-medium">Alex Morgan</div>
-                <div className="text-xs text-muted-foreground">Product Manager · Measure it if you can</div>
-              </div>
+    <div className="min-h-screen bg-neutral-50 font-sans text-neutral-900 tabular-nums">
+      <div className="mx-auto max-w-[1280px] px-8 py-8">
+        {/* Header */}
+        <header className="mb-6 border-b border-neutral-200 pb-5">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-neutral-500">
+                Cisco IT · AI Operations Platform
+              </p>
+              <h1 className="mt-1 text-2xl font-semibold tracking-tight text-neutral-900">
+                Product health dashboard
+              </h1>
             </div>
-            <nav className="hidden items-center gap-7 text-sm md:flex">
-              <a className="font-medium text-foreground" href="#dashboard">Dashboard</a>
-              <a className="text-muted-foreground hover:text-foreground" href="#usecases">Use cases</a>
-              <a className="text-muted-foreground hover:text-foreground" href="#roadmap">Roadmap</a>
-              <a className="text-muted-foreground hover:text-foreground" href="#forecast">Forecast</a>
-            </nav>
-            <Badge variant="secondary" className="hidden bg-accent text-accent-foreground sm:inline-flex">
-              Q2 2026
-            </Badge>
-          </div>
-        </div>
-
-        {/* Inner header */}
-        <header className="border-x border-b bg-card/80 backdrop-blur">
-          <div className="flex items-center justify-between px-6 py-5">
-            <div className="flex items-center gap-3">
-              <div
-                className="flex h-9 w-9 items-center justify-center rounded-lg text-primary-foreground"
-                style={{ background: "var(--gradient-primary)" }}
-              >
-                <Sparkles className="h-5 w-5" />
-              </div>
-              <div>
-                <h1 className="font-serif text-xl font-semibold tracking-tight">Measure it if you can</h1>
-                <p className="text-xs text-muted-foreground">Graph RAG for hallucination-free chatbots · Product Pulse · Updated 2 min ago</p>
-              </div>
+            <div className="flex items-center gap-4 text-xs text-neutral-500">
+              <span>Q2 2026 · Jun 4</span>
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-medium uppercase tracking-wider text-emerald-700">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                Healthy · 82/100
+              </span>
             </div>
-            <Badge variant="secondary" className="hidden sm:inline-flex">
-              Previous quarter → Next-quarter forecast
-            </Badge>
           </div>
         </header>
 
-        <main id="dashboard" className="space-y-6 border-x bg-card px-6 py-8">
-
-        {/* KPIs */}
-        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Kpi icon={ThumbsUp} label="Positive feedback" value="4,820" delta={28} hint="Thumbs-up on agent answers, this quarter" />
-          <Kpi icon={Boxes} label="SRs solved by agent" value="12,340" delta={41} hint="Tickets resolved with our suggestions" />
-          <Kpi icon={ShieldCheck} label="SRs avoided" value="8,150" delta={52} hint="Accurate first response — no ticket opened" />
-          <Kpi icon={TrendingUp} label="Hallucination rate" value="2.1%" delta={-63} hint="Lower is better · vs. previous quarter" lowerIsBetter />
+        {/* KPI strip */}
+        <section className="mb-6 grid grid-cols-4 gap-4">
+          {KPIS.map((k) => (
+            <div
+              key={k.label}
+              className="rounded-md border border-neutral-200 bg-white px-5 py-4"
+            >
+              <p className="text-xs text-neutral-500">{k.label}</p>
+              <p className="mt-2 text-3xl font-semibold tracking-tight">{k.value}</p>
+              <p className="mt-2 text-xs text-emerald-600">↑ {k.delta}</p>
+            </div>
+          ))}
         </section>
 
-        {/* Main chart */}
-        <Card className="overflow-hidden">
-          <CardHeader>
-            <div className="flex flex-wrap items-start justify-between gap-2">
-              <div>
-                <CardTitle>SRs solved & avoided — with Q3 forecast</CardTitle>
-                <CardDescription>
-                  Solid = previous quarter actuals · Dashed = forecast · Right axis: hallucination rate (%)
-                </CardDescription>
-              </div>
-              <Badge className="bg-primary/10 text-primary hover:bg-primary/10">+35% projected</Badge>
+        {/* Traffic & Forecast */}
+        <section className="mb-6 rounded-md border border-neutral-200 bg-white p-5">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-[11px] font-medium uppercase tracking-[0.15em] text-neutral-500">
+              Traffic & forecast — Q4 '25 to Q3 '26
+            </h2>
+            <div className="flex items-center gap-5 text-xs text-neutral-600">
+              <span className="inline-flex items-center gap-2">
+                <span className="h-0.5 w-6 bg-sky-500" /> Actual requests
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <span
+                  className="h-0.5 w-6"
+                  style={{
+                    backgroundImage:
+                      "repeating-linear-gradient(to right, #BA7517 0 4px, transparent 4px 8px)",
+                  }}
+                />
+                Q3 2026 forecast
+              </span>
             </div>
-          </CardHeader>
-          <CardContent className="h-[360px]">
+          </div>
+          <div className="h-[320px]">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={trafficData} margin={{ top: 10, right: 12, left: 0, bottom: 0 }}>
+              <AreaChart data={TRAFFIC} margin={{ top: 10, right: 20, bottom: 0, left: -10 }}>
                 <defs>
-                  <linearGradient id="gSolved" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="var(--chart-1)" stopOpacity={0.45} />
-                    <stop offset="100%" stopColor="var(--chart-1)" stopOpacity={0} />
+                  <linearGradient id="actualFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.18} />
+                    <stop offset="100%" stopColor="#3b82f6" stopOpacity={0} />
                   </linearGradient>
-                  <linearGradient id="gAvoided" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="var(--chart-3)" stopOpacity={0.4} />
-                    <stop offset="100%" stopColor="var(--chart-3)" stopOpacity={0} />
+                  <linearGradient id="forecastFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#BA7517" stopOpacity={0.15} />
+                    <stop offset="100%" stopColor="#BA7517" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                <XAxis dataKey="week" stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis yAxisId="left" stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={fmt} />
-                <YAxis yAxisId="right" orientation="right" stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `${v}%`} />
-                <Tooltip {...tooltipStyle} />
-                <Legend wrapperStyle={{ fontSize: 12 }} />
-                <Area yAxisId="left" type="monotone" dataKey="solved" name="SRs solved" stroke="var(--chart-1)" strokeWidth={2} fill="url(#gSolved)" />
-                <Area yAxisId="left" type="monotone" dataKey="avoided" name="SRs avoided" stroke="var(--chart-3)" strokeWidth={2} fill="url(#gAvoided)" />
-                <Line yAxisId="left" type="monotone" dataKey="forecastSolved" name="Forecast — solved" stroke="var(--chart-1)" strokeWidth={2} strokeDasharray="5 5" dot={false} />
-                <Line yAxisId="left" type="monotone" dataKey="forecastAvoided" name="Forecast — avoided" stroke="var(--chart-3)" strokeWidth={2} strokeDasharray="5 5" dot={false} />
-                <Line yAxisId="right" type="monotone" dataKey="halluc" name="Hallucination %" stroke="var(--chart-5)" strokeWidth={2} dot={{ r: 2 }} />
+                <CartesianGrid stroke="#e5e7eb" vertical={false} />
+                <XAxis dataKey="m" tick={{ fontSize: 11, fill: "#737373" }} axisLine={false} tickLine={false} />
+                <YAxis
+                  tick={{ fontSize: 11, fill: "#737373" }}
+                  axisLine={false}
+                  tickLine={false}
+                  tickFormatter={(v) => (v >= 1000 ? `${v / 1000}k` : `${v}`)}
+                  domain={[3000, 6000]}
+                />
+                <Tooltip
+                  contentStyle={{
+                    fontSize: 12,
+                    borderRadius: 6,
+                    border: "1px solid #e5e7eb",
+                  }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="actual"
+                  stroke="#3b82f6"
+                  strokeWidth={2}
+                  fill="url(#actualFill)"
+                  connectNulls
+                  name="Actual"
+                />
+                <Area
+                  type="monotone"
+                  dataKey="forecast"
+                  stroke="#BA7517"
+                  strokeWidth={2}
+                  strokeDasharray="6 5"
+                  fill="url(#forecastFill)"
+                  connectNulls
+                  name="Forecast"
+                />
               </AreaChart>
             </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* Hallucination reduction vs baseline + Graph coverage trend */}
-        <section className="grid gap-6 lg:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <CardTitle>Hallucination reduction by bot type</CardTitle>
-                  <CardDescription>Baseline LLM vs. with GraphTruth (lower is better)</CardDescription>
-                </div>
-                <ShieldCheck className="h-5 w-5 text-primary" />
-              </div>
-            </CardHeader>
-            <CardContent className="h-[320px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={hallucReduction} margin={{ left: 0, right: 12 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                  <XAxis dataKey="bot" stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} />
-                  <YAxis stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `${v}%`} />
-                  <Tooltip {...tooltipStyle} formatter={(v: number) => `${v}%`} />
-                  <Legend wrapperStyle={{ fontSize: 12 }} />
-                  <Bar dataKey="baseline" name="Baseline" fill="var(--chart-5)" radius={[6, 6, 0, 0]} />
-                  <Bar dataKey="withGraph" name="With GraphTruth" fill="var(--chart-3)" radius={[6, 6, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <CardTitle>Graph coverage vs. answer accuracy</CardTitle>
-                  <CardDescription>Knowledge graph node coverage drives grounded accuracy</CardDescription>
-                </div>
-                <Network className="h-5 w-5 text-primary" />
-              </div>
-            </CardHeader>
-            <CardContent className="h-[320px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={graphCoverage}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                  <XAxis dataKey="week" stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} />
-                  <YAxis stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `${v}%`} domain={[0, 100]} />
-                  <Tooltip {...tooltipStyle} formatter={(v: number) => `${v}%`} />
-                  <Legend wrapperStyle={{ fontSize: 12 }} />
-                  <Line type="monotone" dataKey="coverage" name="Graph coverage" stroke="var(--chart-2)" strokeWidth={2.5} dot={{ r: 3 }} />
-                  <Line type="monotone" dataKey="accuracy" name="Answer accuracy" stroke="var(--chart-3)" strokeWidth={2.5} dot={{ r: 3 }} />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+          </div>
         </section>
 
-        {/* Pipeline + Channel mix */}
-        <section className="grid gap-6 lg:grid-cols-3">
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle>Customer pipeline</CardTitle>
-              <CardDescription>
-                {fmt(totalPipeline)} prospects → {fmt(pipelineData[4].value)} expanded ({conversion}% conversion)
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="h-[300px]">
+        {/* Two column: Pipeline + Use cases */}
+        <section className="mb-6 grid grid-cols-3 gap-4">
+          {/* Pipeline */}
+          <div className="rounded-md border border-neutral-200 bg-white p-5">
+            <h2 className="mb-4 text-[11px] font-medium uppercase tracking-[0.15em] text-neutral-500">
+              User pipeline
+            </h2>
+            <div className="h-[230px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={pipelineData} layout="vertical" margin={{ left: 8, right: 16 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
-                  <XAxis type="number" stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={fmt} />
-                  <YAxis type="category" dataKey="stage" stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} width={90} />
-                  <Tooltip {...tooltipStyle} formatter={(v: number) => fmt(v)} />
-                  <Bar dataKey="value" radius={[0, 6, 6, 0]}>
-                    {pipelineData.map((d, i) => (
-                      <Cell key={i} fill={d.color} />
-                    ))}
-                  </Bar>
+                <BarChart data={PIPELINE} layout="vertical" margin={{ top: 0, right: 20, bottom: 0, left: 10 }}>
+                  <CartesianGrid stroke="#f0f0f0" horizontal={false} />
+                  <XAxis type="number" tick={{ fontSize: 10, fill: "#737373" }} axisLine={false} tickLine={false} />
+                  <YAxis
+                    dataKey="stage"
+                    type="category"
+                    tick={{ fontSize: 11, fill: "#525252" }}
+                    axisLine={false}
+                    tickLine={false}
+                    width={90}
+                  />
+                  <Tooltip contentStyle={{ fontSize: 12, borderRadius: 6, border: "1px solid #e5e7eb" }} />
+                  <Bar dataKey="value" fill="#93c5fd" radius={[0, 2, 2, 0]} barSize={18} />
                 </BarChart>
               </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Acquisition channels</CardTitle>
-              <CardDescription>How customers discover GraphTruth</CardDescription>
-            </CardHeader>
-            <CardContent className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={channelMix} dataKey="value" nameKey="name" innerRadius={55} outerRadius={90} paddingAngle={3}>
-                    {channelMix.map((_, i) => (
-                      <Cell key={i} fill={`var(--chart-${i + 1})`} />
-                    ))}
-                  </Pie>
-                  <Tooltip {...tooltipStyle} formatter={(v: number) => `${v}%`} />
-                  <Legend wrapperStyle={{ fontSize: 12 }} />
-                </PieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </section>
-
-        {/* Tabs: use cases / activity / roadmap */}
-        <Tabs defaultValue="usecases" id="roadmap">
-          <TabsList>
-            <TabsTrigger value="usecases" className="data-[state=active]:bg-card data-[state=active]:text-foreground">Use cases</TabsTrigger>
-            <TabsTrigger value="activity" className="data-[state=active]:bg-card data-[state=active]:text-foreground">Activity</TabsTrigger>
-            <TabsTrigger value="roadmap" className="data-[state=active]:bg-card data-[state=active]:text-foreground">Roadmap</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="usecases" className="mt-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Customer-support bots by adoption</CardTitle>
-                <CardDescription>Active end-users per bot type, positive-feedback growth vs. previous quarter</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {useCases.map((u) => (
-                  <div key={u.name} className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-2 font-medium">
-                        <Layers className="h-4 w-4 text-muted-foreground" />
-                        {u.name}
-                      </div>
-                      <div className="flex items-center gap-3 text-muted-foreground">
-                        <span>{fmt(u.users)} users</span>
-                        <Badge
-                          variant="secondary"
-                          className={
-                            u.growth >= 0
-                              ? "bg-success/15 text-success hover:bg-success/15"
-                              : "bg-destructive/15 text-destructive hover:bg-destructive/15"
-                          }
-                        >
-                          {u.growth >= 0 ? "+" : ""}
-                          {u.growth}%
-                        </Badge>
-                      </div>
-                    </div>
-                    <Progress value={(u.users / useCases[0].users) * 100} className="h-2" />
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="activity" className="mt-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Graph queries & grounded answers</CardTitle>
-                <CardDescription>Daily graph queries vs. answers grounded in the knowledge graph</CardDescription>
-              </CardHeader>
-              <CardContent className="h-[320px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={activityByDay}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                    <XAxis dataKey="day" stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} />
-                    <YAxis stroke="var(--muted-foreground)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={fmt} />
-                    <Tooltip {...tooltipStyle} formatter={(v: number) => fmt(v)} />
-                    <Legend wrapperStyle={{ fontSize: 12 }} />
-                    <Line type="monotone" dataKey="queries" name="Graph queries" stroke="var(--chart-1)" strokeWidth={2.5} dot={{ r: 3 }} />
-                    <Line type="monotone" dataKey="grounded" name="Grounded answers" stroke="var(--chart-3)" strokeWidth={2.5} dot={{ r: 3 }} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="roadmap" className="mt-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Product roadmap</CardTitle>
-                <CardDescription>Q1 shipped · Q2 in progress · Q3 real-time sync, scalability · Q4 enterprise</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {roadmap.map((r) => (
-                  <div key={r.title} className="rounded-lg border bg-card p-4">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <div>
-                        <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                          {r.quarter}
-                        </div>
-                        <div className="mt-0.5 font-medium">{r.title}</div>
-                      </div>
-                      <Badge
-                        variant="secondary"
-                        className={
-                          r.status === "done"
-                            ? "bg-success/15 text-success hover:bg-success/15"
-                            : r.status === "in-progress"
-                              ? "bg-primary/10 text-primary hover:bg-primary/10"
-                              : "bg-muted text-muted-foreground"
-                        }
-                      >
-                        {r.status}
-                      </Badge>
-                    </div>
-                    <Progress value={r.progress} className="mt-3 h-2" />
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-
-      </main>
-
-        {/* Footer */}
-        <footer className="rounded-b-lg border border-t-0 bg-card">
-          <div className="flex flex-col gap-4 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-2 text-sm">
-              <Sparkles className="h-4 w-4 text-primary" />
-              <span className="font-serif font-semibold">Measure it if you can</span>
-              <span className="text-muted-foreground">— Graph RAG for grounded answers</span>
             </div>
-            <nav className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
-              <a href="#" className="hover:text-foreground">About</a>
-              <a href="#" className="hover:text-foreground">Product</a>
-              <a href="#" className="hover:text-foreground">Pricing</a>
-              <a href="#" className="hover:text-foreground">Docs</a>
-              <a href="#" className="hover:text-foreground">Contact</a>
-              <a href="#" className="hover:text-foreground">Privacy</a>
-              <a href="#" className="hover:text-foreground">Terms</a>
-            </nav>
+            <div className="mt-4 space-y-1.5 border-t border-neutral-100 pt-4 text-xs">
+              <div className="flex justify-between">
+                <span className="text-neutral-600">Activation rate</span>
+                <span className="font-medium text-sky-600">66.7%</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-neutral-600">Power user rate</span>
+                <span className="font-medium text-sky-600">22.6%</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-neutral-600">Champion rate</span>
+                <span className="font-medium text-sky-600">7.6%</span>
+              </div>
+            </div>
           </div>
-          <div className="rounded-b-lg bg-neutral-800 px-6 py-3 text-center text-xs text-neutral-300">
-            <Activity className="mr-1 inline h-3 w-3" />
-            © {new Date().getFullYear()} Measure it if you can. All rights reserved.
+
+          {/* Use cases */}
+          <div className="col-span-2 rounded-md border border-neutral-200 bg-white p-5">
+            <h2 className="mb-4 text-[11px] font-medium uppercase tracking-[0.15em] text-neutral-500">
+              Use case activity — 12 total · monthly requests
+            </h2>
+            <div className="space-y-2">
+              {USE_CASES.map((u) => {
+                const pct = (u.count / MAX_USE_CASE) * 100;
+                const isBreakout = u.name === "Code review assist";
+                return (
+                  <div
+                    key={u.name}
+                    className={`grid grid-cols-[180px_60px_1fr_60px_50px] items-center gap-3 rounded px-1 py-1 text-xs ${
+                      isBreakout ? "bg-amber-50/60" : ""
+                    }`}
+                  >
+                    <span className="truncate text-neutral-800">{u.name}</span>
+                    <StatusBadge status={u.status} />
+                    <div className="h-1.5 w-full rounded-full bg-neutral-100">
+                      <div
+                        className={`h-full rounded-full ${
+                          u.status === "Live"
+                            ? "bg-sky-500"
+                            : u.status === "Beta"
+                              ? "bg-amber-500"
+                              : "bg-neutral-300"
+                        }`}
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                    <span className="text-right font-medium text-neutral-900">
+                      {u.count.toLocaleString()}
+                    </span>
+                    <span
+                      className={`text-right text-xs ${
+                        u.isNew ? "text-neutral-400" : "text-emerald-600"
+                      } ${isBreakout ? "font-semibold" : ""}`}
+                    >
+                      {u.growth}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
+        </section>
+
+        {/* Roadmap */}
+        <section className="mb-6 rounded-md border border-neutral-200 bg-white p-5">
+          <h2 className="mb-4 text-[11px] font-medium uppercase tracking-[0.15em] text-neutral-500">
+            Product roadmap — Q2–Q4 2026
+          </h2>
+          <div className="grid grid-cols-3 gap-6">
+            {ROADMAP.map((col) => (
+              <div key={col.quarter}>
+                <div className="mb-3 flex items-center gap-2 text-xs text-neutral-700">
+                  <span className={`h-2 w-2 rounded-full ${col.dot}`} />
+                  <span className="font-medium">{col.quarter}</span>
+                  {col.badge && (
+                    <span className="rounded-sm border border-emerald-200 bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-emerald-700">
+                      {col.badge}
+                    </span>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  {col.items.map((it) => (
+                    <div
+                      key={it.title}
+                      className={`rounded-sm border border-neutral-200 border-l-2 ${ROAD_EDGE[it.status]} bg-white px-3 py-2.5`}
+                    >
+                      <p className="text-sm font-medium text-neutral-900">{it.title}</p>
+                      <div className="mt-1.5 flex items-center gap-2">
+                        <RoadStatusBadge status={it.status} />
+                        <span className="text-[10px] font-medium uppercase tracking-wider text-neutral-400">
+                          {it.tag}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Forecast summary */}
+        <section className="mb-6 rounded-md border border-amber-200 bg-amber-50/40 p-5">
+          <h2 className="mb-4 text-[11px] font-medium uppercase tracking-[0.15em] text-neutral-600">
+            Q3 2026 forecast — based on Q2 trends
+          </h2>
+          <div className="grid grid-cols-4 gap-4">
+            {FORECAST.map((f) => (
+              <div key={f.label} className="rounded-md border border-amber-200 bg-white px-4 py-3">
+                <p className="text-[10px] font-medium uppercase tracking-wider text-neutral-500">
+                  {f.label}
+                </p>
+                <p className="mt-2 text-2xl font-semibold tracking-tight text-amber-900">
+                  {f.value}
+                </p>
+                <p className="mt-1 text-xs text-neutral-500">{f.sub}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Field signals */}
+        <section className="mb-6 rounded-md border border-neutral-200 bg-white p-5">
+          <h2 className="mb-4 text-[11px] font-medium uppercase tracking-[0.15em] text-neutral-500">
+            Field signals
+          </h2>
+          <div className="grid grid-cols-3 gap-4 text-sm">
+            {[
+              {
+                q: "I spend 45 minutes every Friday pulling data from three different tools just to build one slide.",
+                a: "IT Platform PM, sprint retro",
+              },
+              {
+                q: "I didn't know Code Review was up 44% until the QBR. I would have invested in it a month earlier.",
+                a: "IT Operations Lead, post-QBR debrief",
+              },
+              {
+                q: "The forecast is useful but I won't show it to my VP without knowing where the numbers come from.",
+                a: "Enterprise Architect, dashboard review",
+              },
+            ].map((s) => (
+              <blockquote
+                key={s.a}
+                className="border-l-2 border-sky-300 bg-neutral-50/60 px-4 py-3"
+              >
+                <p className="italic text-neutral-700">"{s.q}"</p>
+                <footer className="mt-2 text-xs text-neutral-500">— {s.a}</footer>
+              </blockquote>
+            ))}
+          </div>
+        </section>
+
+        <footer className="border-t border-neutral-200 pt-4 text-center text-xs text-neutral-400">
+          Cisco IT · AI Operations Platform · Product Health Dashboard · Q2 2026
         </footer>
       </div>
     </div>
   );
 }
-

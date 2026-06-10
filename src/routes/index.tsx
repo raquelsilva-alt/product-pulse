@@ -1,4 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { USE_CASES, slugify } from "@/data/useCases";
 import {
   Area,
   AreaChart,

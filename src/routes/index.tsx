@@ -224,6 +224,10 @@ function MiniSparkline({ data }: { data: [number, number, number] }) {
 // ---------- Component ----------
 
 function Dashboard() {
+  const { state } = Route.useSearch();
+  const navigate = Route.useNavigate();
+  const retry = () => navigate({ search: { state: "ready" as DataState } });
+
   return (
     <div className="min-h-screen bg-neutral-50 font-sans text-neutral-900 tabular-nums">
       <div className="mx-auto max-w-[1280px] px-8 py-8">
@@ -239,6 +243,7 @@ function Dashboard() {
               </h1>
             </div>
             <div className="flex items-center gap-4 text-xs text-neutral-500">
+              <StateToggle basePath="/" current={state} />
               <span>Q2 2026 · Jun 4</span>
               <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-medium uppercase tracking-wider text-emerald-700">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
@@ -256,8 +261,20 @@ function Dashboard() {
               className="rounded-md border border-neutral-200 bg-white px-5 py-4"
             >
               <p className="text-xs text-neutral-500">{k.label}</p>
-              <p className="mt-2 text-3xl font-semibold tracking-tight">{k.value}</p>
-              <p className="mt-2 text-xs text-emerald-600">↑ {k.delta}</p>
+              {state === "loading" ? (
+                <SkeletonLine className="mt-2 h-7 w-20" />
+              ) : state === "error" ? (
+                <p className="mt-2 text-3xl font-semibold tracking-tight text-neutral-400">—</p>
+              ) : (
+                <p className="mt-2 text-3xl font-semibold tracking-tight">{k.value}</p>
+              )}
+              {state === "loading" ? (
+                <SkeletonLine className="mt-2 h-3 w-24" />
+              ) : state === "error" ? (
+                <CachedBadge onRetry={retry} />
+              ) : (
+                <p className="mt-2 text-xs text-emerald-600">↑ {k.delta}</p>
+              )}
             </div>
           ))}
         </section>

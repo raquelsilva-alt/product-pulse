@@ -370,22 +370,30 @@ function Dashboard() {
               User pipeline
             </h2>
             <div className="h-[230px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={PIPELINE} layout="vertical" margin={{ top: 0, right: 20, bottom: 0, left: 10 }}>
-                  <CartesianGrid stroke="#f0f0f0" horizontal={false} />
-                  <XAxis type="number" tick={{ fontSize: 10, fill: "#737373" }} axisLine={false} tickLine={false} />
-                  <YAxis
-                    dataKey="stage"
-                    type="category"
-                    tick={{ fontSize: 11, fill: "#525252" }}
-                    axisLine={false}
-                    tickLine={false}
-                    width={90}
-                  />
-                  <Tooltip contentStyle={{ fontSize: 12, borderRadius: 6, border: "1px solid #e5e7eb" }} />
-                  <Bar dataKey="value" fill="#93c5fd" radius={[0, 2, 2, 0]} barSize={18} />
-                </BarChart>
-              </ResponsiveContainer>
+              {state === "loading" ? (
+                <BarChartSkeleton height={230} rows={5} />
+              ) : state === "error" ? (
+                <ErrorMessage onRetry={retry}>
+                  Data connection interrupted. Last successful sync: Jun 3, 2026.
+                </ErrorMessage>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={PIPELINE} layout="vertical" margin={{ top: 0, right: 20, bottom: 0, left: 10 }}>
+                    <CartesianGrid stroke="#f0f0f0" horizontal={false} />
+                    <XAxis type="number" tick={{ fontSize: 10, fill: "#737373" }} axisLine={false} tickLine={false} />
+                    <YAxis
+                      dataKey="stage"
+                      type="category"
+                      tick={{ fontSize: 11, fill: "#525252" }}
+                      axisLine={false}
+                      tickLine={false}
+                      width={90}
+                    />
+                    <Tooltip contentStyle={{ fontSize: 12, borderRadius: 6, border: "1px solid #e5e7eb" }} />
+                    <Bar dataKey="value" fill="#93c5fd" radius={[0, 2, 2, 0]} barSize={18} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
             </div>
             <div className="mt-4 space-y-1.5 border-t border-neutral-100 pt-4 text-xs">
               <div className="flex justify-between">

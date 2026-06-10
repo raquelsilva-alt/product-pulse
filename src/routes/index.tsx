@@ -6,14 +6,26 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
-  Legend,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
+import {
+  BarChartSkeleton,
+  CachedBadge,
+  ChartSkeleton,
+  ErrorMessage,
+  parseStateParam,
+  SkeletonLine,
+  StateToggle,
+  type DataState,
+} from "@/components/states";
 
 export const Route = createFileRoute("/")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    state: parseStateParam(s.state),
+  }),
   head: () => ({
     meta: [
       { title: "Measure it · AI Operations Platform — Product Health Dashboard" },

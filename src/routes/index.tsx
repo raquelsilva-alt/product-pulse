@@ -376,10 +376,12 @@ function Dashboard() {
                 const pct = (u.count / MAX_USE_CASE) * 100;
                 const isBreakout = u.name === "Code review assist";
                 return (
-                  <div
+                  <Link
                     key={u.name}
-                    className={`grid grid-cols-[180px_60px_1fr_60px_86px] items-center gap-3 rounded px-1 py-1 text-xs ${
-                      isBreakout ? "bg-amber-50/60" : ""
+                    to="/use-case/$slug"
+                    params={{ slug: slugify(u.name) }}
+                    className={`grid grid-cols-[180px_60px_1fr_60px_86px] items-center gap-3 rounded px-1 py-1 text-xs transition-colors hover:bg-neutral-100 ${
+                      isBreakout ? "bg-amber-50/60 hover:bg-amber-100/60" : ""
                     }`}
                   >
                     <span className="truncate text-neutral-800">{u.name}</span>
@@ -403,7 +405,7 @@ function Dashboard() {
                       <GrowthBadge growth={u.growth} isNew={u.isNew} />
                       <MiniSparkline data={u.trend} />
                     </div>
-                  </div>
+                  </Link>
                 );
               })}
             </div>

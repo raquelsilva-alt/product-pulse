@@ -418,8 +418,11 @@ function Dashboard() {
             </h2>
             <div className="space-y-2">
               {USE_CASES.map((u) => {
+                const isLoading = state === "loading";
+                // "empty" forces all rows into the zero-activity treatment.
+                const isEmpty = state === "empty" || u.count === 0;
                 const pct = (u.count / MAX_USE_CASE) * 100;
-                const isBreakout = u.name === "Code review assist";
+                const isBreakout = u.name === "Code review assist" && !isLoading && !isEmpty;
                 return (
                   <Link
                     key={u.name}
@@ -431,25 +434,39 @@ function Dashboard() {
                   >
                     <span className="truncate text-neutral-800">{u.name}</span>
                     <StatusBadge status={u.status} />
-                    <div className="h-1.5 w-full rounded-full bg-neutral-100">
-                      <div
-                        className={`h-full rounded-full ${
-                          u.status === "Live"
-                            ? "bg-sky-500"
-                            : u.status === "Beta"
-                              ? "bg-amber-500"
-                              : "bg-neutral-300"
-                        }`}
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
-                    <span className="text-right font-medium text-neutral-900">
-                      {u.count.toLocaleString()}
-                    </span>
-                    <div className="flex items-center justify-end gap-1.5">
-                      <GrowthBadge growth={u.growth} isNew={u.isNew} />
-                      <MiniSparkline data={u.trend} />
-                    </div>
+                    {isLoading ? (
+                      <>
+                        <SkeletonLine className="h-1.5 w-full" />
+                        <SkeletonLine className="ml-auto h-3 w-12" />
+                        <SkeletonLine className="ml-auto h-4 w-20" />
+                      </>
+                    ) : isEmpty ? (
+                      <span className="col-span-3 text-right text-neutral-400">
+                        No activity this period
+                      </span>
+                    ) : (
+                      <>
+                        <div className="h-1.5 w-full rounded-full bg-neutral-100">
+                          <div
+                            className={`h-full rounded-full ${
+                              u.status === "Live"
+                                ? "bg-sky-500"
+                                : u.status === "Beta"
+                                  ? "bg-amber-500"
+                                  : "bg-neutral-300"
+                            }`}
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                        <span className="text-right font-medium text-neutral-900">
+                          {u.count.toLocaleString()}
+                        </span>
+                        <div className="flex items-center justify-end gap-1.5">
+                          <GrowthBadge growth={u.growth} isNew={u.isNew} />
+                          <MiniSparkline data={u.trend} />
+                        </div>
+                      </>
+                    )}
                   </Link>
                 );
               })}

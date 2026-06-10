@@ -149,7 +149,10 @@ export function StateToggle({
         <Link
           key={s}
           to={basePath}
-          search={(prev) => ({ ...prev, state: s === "ready" ? undefined : s })}
+          search={(prev: Record<string, unknown>) => ({
+            ...prev,
+            state: s === "ready" ? undefined : s,
+          })}
           params={true as never}
           className={`rounded px-1.5 py-0.5 font-medium uppercase tracking-wider transition-colors ${
             current === s

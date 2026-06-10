@@ -302,55 +302,63 @@ function Dashboard() {
             </div>
           </div>
           <div className="h-[320px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={TRAFFIC} margin={{ top: 10, right: 20, bottom: 0, left: -10 }}>
-                <defs>
-                  <linearGradient id="actualFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.18} />
-                    <stop offset="100%" stopColor="#3b82f6" stopOpacity={0} />
-                  </linearGradient>
-                  <linearGradient id="forecastFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#BA7517" stopOpacity={0.15} />
-                    <stop offset="100%" stopColor="#BA7517" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid stroke="#e5e7eb" vertical={false} />
-                <XAxis dataKey="m" tick={{ fontSize: 11, fill: "#737373" }} axisLine={false} tickLine={false} />
-                <YAxis
-                  tick={{ fontSize: 11, fill: "#737373" }}
-                  axisLine={false}
-                  tickLine={false}
-                  tickFormatter={(v) => (v >= 1000 ? `${v / 1000}k` : `${v}`)}
-                  domain={[3000, 6000]}
-                />
-                <Tooltip
-                  contentStyle={{
-                    fontSize: 12,
-                    borderRadius: 6,
-                    border: "1px solid #e5e7eb",
-                  }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="actual"
-                  stroke="#3b82f6"
-                  strokeWidth={2}
-                  fill="url(#actualFill)"
-                  connectNulls
-                  name="Actual"
-                />
-                <Area
-                  type="monotone"
-                  dataKey="forecast"
-                  stroke="#BA7517"
-                  strokeWidth={2}
-                  strokeDasharray="6 5"
-                  fill="url(#forecastFill)"
-                  connectNulls
-                  name="Forecast"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+            {state === "loading" ? (
+              <ChartSkeleton height={320} />
+            ) : state === "error" ? (
+              <ErrorMessage onRetry={retry}>
+                Data connection interrupted. Last successful sync: Jun 3, 2026.
+              </ErrorMessage>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={TRAFFIC} margin={{ top: 10, right: 20, bottom: 0, left: -10 }}>
+                  <defs>
+                    <linearGradient id="actualFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.18} />
+                      <stop offset="100%" stopColor="#3b82f6" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="forecastFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#BA7517" stopOpacity={0.15} />
+                      <stop offset="100%" stopColor="#BA7517" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid stroke="#e5e7eb" vertical={false} />
+                  <XAxis dataKey="m" tick={{ fontSize: 11, fill: "#737373" }} axisLine={false} tickLine={false} />
+                  <YAxis
+                    tick={{ fontSize: 11, fill: "#737373" }}
+                    axisLine={false}
+                    tickLine={false}
+                    tickFormatter={(v) => (v >= 1000 ? `${v / 1000}k` : `${v}`)}
+                    domain={[3000, 6000]}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      fontSize: 12,
+                      borderRadius: 6,
+                      border: "1px solid #e5e7eb",
+                    }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="actual"
+                    stroke="#3b82f6"
+                    strokeWidth={2}
+                    fill="url(#actualFill)"
+                    connectNulls
+                    name="Actual"
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="forecast"
+                    stroke="#BA7517"
+                    strokeWidth={2}
+                    strokeDasharray="6 5"
+                    fill="url(#forecastFill)"
+                    connectNulls
+                    name="Forecast"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
           </div>
         </section>
 

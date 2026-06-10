@@ -59,19 +59,26 @@ const PIPELINE = [
 ];
 
 type Status = "Live" | "Beta" | "Pilot";
-const USE_CASES: { name: string; status: Status; count: number; growth: string; isNew?: boolean }[] = [
-  { name: "IT service request", status: "Live", count: 1420, growth: "+12%" },
-  { name: "Knowledge base Q&A", status: "Live", count: 890, growth: "+8%" },
-  { name: "Incident triage", status: "Live", count: 670, growth: "+22%" },
-  { name: "HR policy assistant", status: "Live", count: 540, growth: "+5%" },
-  { name: "Contract review", status: "Live", count: 380, growth: "+18%" },
-  { name: "Meeting summary", status: "Live", count: 290, growth: "+31%" },
-  { name: "Code review assist", status: "Live", count: 180, growth: "+44%" },
-  { name: "Security alerts", status: "Live", count: 145, growth: "+9%" },
-  { name: "Vendor management", status: "Beta", count: 89, growth: "+61%" },
-  { name: "Procurement assist", status: "Beta", count: 67, growth: "+88%" },
-  { name: "Change management", status: "Pilot", count: 18, growth: "New", isNew: true },
-  { name: "Asset management", status: "Pilot", count: 12, growth: "New", isNew: true },
+const USE_CASES: {
+  name: string;
+  status: Status;
+  count: number;
+  growth: string;
+  isNew?: boolean;
+  trend: [number, number, number];
+}[] = [
+  { name: "IT service request", status: "Live", count: 1420, growth: "+12%", trend: [1260, 1340, 1420] },
+  { name: "Knowledge base Q&A", status: "Live", count: 890, growth: "+8%", trend: [820, 855, 890] },
+  { name: "Incident triage", status: "Live", count: 670, growth: "+22%", trend: [545, 605, 670] },
+  { name: "HR policy assistant", status: "Live", count: 540, growth: "+5%", trend: [515, 528, 540] },
+  { name: "Contract review", status: "Live", count: 380, growth: "+18%", trend: [320, 350, 380] },
+  { name: "Meeting summary", status: "Live", count: 290, growth: "+31%", trend: [220, 255, 290] },
+  { name: "Code review assist", status: "Live", count: 180, growth: "+44%", trend: [125, 152, 180] },
+  { name: "Security alerts", status: "Live", count: 145, growth: "+9%", trend: [132, 138, 145] },
+  { name: "Vendor management", status: "Beta", count: 89, growth: "+61%", trend: [55, 71, 89] },
+  { name: "Procurement assist", status: "Beta", count: 67, growth: "+88%", trend: [36, 51, 67] },
+  { name: "Change management", status: "Pilot", count: 18, growth: "New", isNew: true, trend: [0, 8, 18] },
+  { name: "Asset management", status: "Pilot", count: 12, growth: "New", isNew: true, trend: [0, 5, 12] },
 ];
 
 const MAX_USE_CASE = Math.max(...USE_CASES.map((u) => u.count));

@@ -170,6 +170,64 @@ const ROAD_EDGE: Record<RoadStatus, string> = {
   Backlog: "border-l-neutral-300",
 };
 
+function parseGrowth(growth: string): number | null {
+  const m = growth.match(/^\+?(\d+)%$/);
+  return m ? parseInt(m[1], 10) : null;
+}
+
+function GrowthBadge({ growth, isNew }: { growth: string; isNew?: boolean }) {
+  if (isNew) {
+    return (
+      <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
+        {growth}
+      </span>
+    );
+  }
+  const val = parseGrowth(growth);
+  let classes = "inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-semibold ";
+  if (val === null) {
+    classes += "border-neutral-200 bg-neutral-100 text-neutral-600";
+  } else if (val <= 10) {
+    classes += "border-emerald-200 bg-emerald-50/70 text-emerald-600";
+  } else if (val <= 30) {
+    classes += "border-emerald-200 bg-emerald-100 text-emerald-700";
+  } else {
+    classes += "border-emerald-300 bg-emerald-200 text-emerald-800";
+  }
+  return <span className={classes}>{growth}</span>;
+}
+
+function MiniSparkline({ data }: { data: [number, number, number] }) {
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  const range = max - min || 1;
+  const w = 28;
+  const h = 14;
+  const pad = 2;
+  const points = data.map((v, i) => {
+    const x = pad + (i / (data.length - 1)) * (w - pad * 2);
+    const y = h - pad - ((v - min) / range) * (h - pad * 2);
+    return `${x},${y}`;
+  });
+  return (
+    <svg width={w} height={h} className="inline-block" viewBox={`0 0 ${w} ${h}`}>
+      <polyline
+        fill="none"
+        stroke="#10b981"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        points={points.join(" ")}
+      />
+      {data.map((v, i) => {
+        const x = pad + (i / (data.length - 1)) * (w - pad * 2);
+        const y = h - pad - ((v - min) / range) * (h - pad * 2);
+        return <circle key={i} cx={x} cy={y} r="1.5" fill="#10b981" />;
+      })}
+    </svg>
+  );
+}
+
 // ---------- Component ----------
 
 function Dashboard() {

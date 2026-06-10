@@ -171,21 +171,21 @@ function parseGrowth(growth: string): number | null {
 function GrowthBadge({ growth, isNew }: { growth: string; isNew?: boolean }) {
   if (isNew) {
     return (
-      <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
+      <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-100 px-2.5 py-1 text-sm font-bold text-amber-800">
         {growth}
       </span>
     );
   }
   const val = parseGrowth(growth);
-  let classes = "inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-semibold ";
+  let classes = "inline-flex items-center rounded-full border px-2.5 py-1 text-sm font-bold ";
   if (val === null) {
     classes += "border-neutral-200 bg-neutral-100 text-neutral-600";
   } else if (val <= 10) {
-    classes += "border-emerald-200 bg-emerald-50/70 text-emerald-600";
+    classes += "border-emerald-200 bg-emerald-50 text-emerald-600";
   } else if (val <= 30) {
-    classes += "border-emerald-200 bg-emerald-100 text-emerald-700";
-  } else {
     classes += "border-emerald-300 bg-emerald-200 text-emerald-800";
+  } else {
+    classes += "border-emerald-600 bg-emerald-500 text-white";
   }
   return <span className={classes}>{growth}</span>;
 }

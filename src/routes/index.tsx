@@ -397,7 +397,7 @@ function Dashboard() {
                 return (
                   <div
                     key={u.name}
-                    className={`grid grid-cols-[180px_60px_1fr_60px_50px] items-center gap-3 rounded px-1 py-1 text-xs ${
+                    className={`grid grid-cols-[180px_60px_1fr_60px_86px] items-center gap-3 rounded px-1 py-1 text-xs ${
                       isBreakout ? "bg-amber-50/60" : ""
                     }`}
                   >
@@ -418,13 +418,10 @@ function Dashboard() {
                     <span className="text-right font-medium text-neutral-900">
                       {u.count.toLocaleString()}
                     </span>
-                    <span
-                      className={`text-right text-xs ${
-                        u.isNew ? "text-neutral-400" : "text-emerald-600"
-                      } ${isBreakout ? "font-semibold" : ""}`}
-                    >
-                      {u.growth}
-                    </span>
+                    <div className="flex items-center justify-end gap-1.5">
+                      <GrowthBadge growth={u.growth} isNew={u.isNew} />
+                      <MiniSparkline data={u.trend} />
+                    </div>
                   </div>
                 );
               })}

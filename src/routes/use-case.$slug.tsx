@@ -8,7 +8,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { getUseCase, monthlyTrend, type Status } from "@/data/useCases";
+import { getUseCase, monthlyTrend, type Status, type UseCase } from "@/data/useCases";
 
 export const Route = createFileRoute("/use-case/$slug")({
   head: ({ params }) => ({
@@ -49,7 +49,7 @@ function StatusBadge({ status }: { status: Status }) {
 }
 
 function UseCaseDetail() {
-  const { uc } = Route.useLoaderData();
+  const { uc } = Route.useLoaderData() as { uc: UseCase };
   const data = monthlyTrend(uc);
   const first = data[0].actual;
   const last = data[data.length - 1].actual;

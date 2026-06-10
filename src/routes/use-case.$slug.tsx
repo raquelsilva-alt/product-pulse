@@ -63,9 +63,10 @@ function StatusBadge({ status }: { status: Status }) {
 function UseCaseDetail() {
   const { uc } = Route.useLoaderData() as { uc: UseCase };
   const { state } = Route.useSearch();
+  const params = Route.useParams();
   const navigate = Route.useNavigate();
   const retry = () =>
-    navigate({ search: { state: "ready" as DataState }, params: { slug: Route.useParams().slug } as never });
+    navigate({ search: { state: "ready" as DataState }, params });
 
   // Top-level fetch failure short-circuits the data sections.
   const fetchFailed = state === "error";

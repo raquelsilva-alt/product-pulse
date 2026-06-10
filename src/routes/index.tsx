@@ -6,14 +6,26 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
-  Legend,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
+import {
+  BarChartSkeleton,
+  CachedBadge,
+  ChartSkeleton,
+  ErrorMessage,
+  parseStateParam,
+  SkeletonLine,
+  StateToggle,
+  type DataState,
+} from "@/components/states";
 
 export const Route = createFileRoute("/")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    state: parseStateParam(s.state),
+  }),
   head: () => ({
     meta: [
       { title: "Measure it · AI Operations Platform — Product Health Dashboard" },
@@ -212,6 +224,10 @@ function MiniSparkline({ data }: { data: [number, number, number] }) {
 // ---------- Component ----------
 
 function Dashboard() {
+  const { state } = Route.useSearch();
+  const navigate = Route.useNavigate();
+  const retry = () => navigate({ search: { state: "ready" as DataState } });
+
   return (
     <div className="min-h-screen bg-neutral-50 font-sans text-neutral-900 tabular-nums">
       <div className="mx-auto max-w-[1280px] px-8 py-8">
@@ -227,6 +243,7 @@ function Dashboard() {
               </h1>
             </div>
             <div className="flex items-center gap-4 text-xs text-neutral-500">
+              <StateToggle basePath="/" current={state} />
               <span>Q2 2026 · Jun 4</span>
               <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-medium uppercase tracking-wider text-emerald-700">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
@@ -244,8 +261,20 @@ function Dashboard() {
               className="rounded-md border border-neutral-200 bg-white px-5 py-4"
             >
               <p className="text-xs text-neutral-500">{k.label}</p>
-              <p className="mt-2 text-3xl font-semibold tracking-tight">{k.value}</p>
-              <p className="mt-2 text-xs text-emerald-600">↑ {k.delta}</p>
+              {state === "loading" ? (
+                <SkeletonLine className="mt-2 h-7 w-20" />
+              ) : state === "error" ? (
+                <p className="mt-2 text-3xl font-semibold tracking-tight text-neutral-400">—</p>
+              ) : (
+                <p className="mt-2 text-3xl font-semibold tracking-tight">{k.value}</p>
+              )}
+              {state === "loading" ? (
+                <SkeletonLine className="mt-2 h-3 w-24" />
+              ) : state === "error" ? (
+                <CachedBadge onRetry={retry} />
+              ) : (
+                <p className="mt-2 text-xs text-emerald-600">↑ {k.delta}</p>
+              )}
             </div>
           ))}
         </section>
@@ -273,55 +302,63 @@ function Dashboard() {
             </div>
           </div>
           <div className="h-[320px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={TRAFFIC} margin={{ top: 10, right: 20, bottom: 0, left: -10 }}>
-                <defs>
-                  <linearGradient id="actualFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.18} />
-                    <stop offset="100%" stopColor="#3b82f6" stopOpacity={0} />
-                  </linearGradient>
-                  <linearGradient id="forecastFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#BA7517" stopOpacity={0.15} />
-                    <stop offset="100%" stopColor="#BA7517" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid stroke="#e5e7eb" vertical={false} />
-                <XAxis dataKey="m" tick={{ fontSize: 11, fill: "#737373" }} axisLine={false} tickLine={false} />
-                <YAxis
-                  tick={{ fontSize: 11, fill: "#737373" }}
-                  axisLine={false}
-                  tickLine={false}
-                  tickFormatter={(v) => (v >= 1000 ? `${v / 1000}k` : `${v}`)}
-                  domain={[3000, 6000]}
-                />
-                <Tooltip
-                  contentStyle={{
-                    fontSize: 12,
-                    borderRadius: 6,
-                    border: "1px solid #e5e7eb",
-                  }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="actual"
-                  stroke="#3b82f6"
-                  strokeWidth={2}
-                  fill="url(#actualFill)"
-                  connectNulls
-                  name="Actual"
-                />
-                <Area
-                  type="monotone"
-                  dataKey="forecast"
-                  stroke="#BA7517"
-                  strokeWidth={2}
-                  strokeDasharray="6 5"
-                  fill="url(#forecastFill)"
-                  connectNulls
-                  name="Forecast"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+            {state === "loading" ? (
+              <ChartSkeleton height={320} />
+            ) : state === "error" ? (
+              <ErrorMessage onRetry={retry}>
+                Data connection interrupted. Last successful sync: Jun 3, 2026.
+              </ErrorMessage>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={TRAFFIC} margin={{ top: 10, right: 20, bottom: 0, left: -10 }}>
+                  <defs>
+                    <linearGradient id="actualFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.18} />
+                      <stop offset="100%" stopColor="#3b82f6" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="forecastFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#BA7517" stopOpacity={0.15} />
+                      <stop offset="100%" stopColor="#BA7517" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid stroke="#e5e7eb" vertical={false} />
+                  <XAxis dataKey="m" tick={{ fontSize: 11, fill: "#737373" }} axisLine={false} tickLine={false} />
+                  <YAxis
+                    tick={{ fontSize: 11, fill: "#737373" }}
+                    axisLine={false}
+                    tickLine={false}
+                    tickFormatter={(v) => (v >= 1000 ? `${v / 1000}k` : `${v}`)}
+                    domain={[3000, 6000]}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      fontSize: 12,
+                      borderRadius: 6,
+                      border: "1px solid #e5e7eb",
+                    }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="actual"
+                    stroke="#3b82f6"
+                    strokeWidth={2}
+                    fill="url(#actualFill)"
+                    connectNulls
+                    name="Actual"
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="forecast"
+                    stroke="#BA7517"
+                    strokeWidth={2}
+                    strokeDasharray="6 5"
+                    fill="url(#forecastFill)"
+                    connectNulls
+                    name="Forecast"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
           </div>
         </section>
 
@@ -333,22 +370,30 @@ function Dashboard() {
               User pipeline
             </h2>
             <div className="h-[230px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={PIPELINE} layout="vertical" margin={{ top: 0, right: 20, bottom: 0, left: 10 }}>
-                  <CartesianGrid stroke="#f0f0f0" horizontal={false} />
-                  <XAxis type="number" tick={{ fontSize: 10, fill: "#737373" }} axisLine={false} tickLine={false} />
-                  <YAxis
-                    dataKey="stage"
-                    type="category"
-                    tick={{ fontSize: 11, fill: "#525252" }}
-                    axisLine={false}
-                    tickLine={false}
-                    width={90}
-                  />
-                  <Tooltip contentStyle={{ fontSize: 12, borderRadius: 6, border: "1px solid #e5e7eb" }} />
-                  <Bar dataKey="value" fill="#93c5fd" radius={[0, 2, 2, 0]} barSize={18} />
-                </BarChart>
-              </ResponsiveContainer>
+              {state === "loading" ? (
+                <BarChartSkeleton height={230} rows={5} />
+              ) : state === "error" ? (
+                <ErrorMessage onRetry={retry}>
+                  Data connection interrupted. Last successful sync: Jun 3, 2026.
+                </ErrorMessage>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={PIPELINE} layout="vertical" margin={{ top: 0, right: 20, bottom: 0, left: 10 }}>
+                    <CartesianGrid stroke="#f0f0f0" horizontal={false} />
+                    <XAxis type="number" tick={{ fontSize: 10, fill: "#737373" }} axisLine={false} tickLine={false} />
+                    <YAxis
+                      dataKey="stage"
+                      type="category"
+                      tick={{ fontSize: 11, fill: "#525252" }}
+                      axisLine={false}
+                      tickLine={false}
+                      width={90}
+                    />
+                    <Tooltip contentStyle={{ fontSize: 12, borderRadius: 6, border: "1px solid #e5e7eb" }} />
+                    <Bar dataKey="value" fill="#93c5fd" radius={[0, 2, 2, 0]} barSize={18} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
             </div>
             <div className="mt-4 space-y-1.5 border-t border-neutral-100 pt-4 text-xs">
               <div className="flex justify-between">
@@ -373,8 +418,11 @@ function Dashboard() {
             </h2>
             <div className="space-y-2">
               {USE_CASES.map((u) => {
+                const isLoading = state === "loading";
+                // "empty" forces all rows into the zero-activity treatment.
+                const isEmpty = state === "empty" || u.count === 0;
                 const pct = (u.count / MAX_USE_CASE) * 100;
-                const isBreakout = u.name === "Code review assist";
+                const isBreakout = u.name === "Code review assist" && !isLoading && !isEmpty;
                 return (
                   <Link
                     key={u.name}
@@ -386,25 +434,39 @@ function Dashboard() {
                   >
                     <span className="truncate text-neutral-800">{u.name}</span>
                     <StatusBadge status={u.status} />
-                    <div className="h-1.5 w-full rounded-full bg-neutral-100">
-                      <div
-                        className={`h-full rounded-full ${
-                          u.status === "Live"
-                            ? "bg-sky-500"
-                            : u.status === "Beta"
-                              ? "bg-amber-500"
-                              : "bg-neutral-300"
-                        }`}
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
-                    <span className="text-right font-medium text-neutral-900">
-                      {u.count.toLocaleString()}
-                    </span>
-                    <div className="flex items-center justify-end gap-1.5">
-                      <GrowthBadge growth={u.growth} isNew={u.isNew} />
-                      <MiniSparkline data={u.trend} />
-                    </div>
+                    {isLoading ? (
+                      <>
+                        <SkeletonLine className="h-1.5 w-full" />
+                        <SkeletonLine className="ml-auto h-3 w-12" />
+                        <SkeletonLine className="ml-auto h-4 w-20" />
+                      </>
+                    ) : isEmpty ? (
+                      <span className="col-span-3 text-right text-neutral-400">
+                        No activity this period
+                      </span>
+                    ) : (
+                      <>
+                        <div className="h-1.5 w-full rounded-full bg-neutral-100">
+                          <div
+                            className={`h-full rounded-full ${
+                              u.status === "Live"
+                                ? "bg-sky-500"
+                                : u.status === "Beta"
+                                  ? "bg-amber-500"
+                                  : "bg-neutral-300"
+                            }`}
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                        <span className="text-right font-medium text-neutral-900">
+                          {u.count.toLocaleString()}
+                        </span>
+                        <div className="flex items-center justify-end gap-1.5">
+                          <GrowthBadge growth={u.growth} isNew={u.isNew} />
+                          <MiniSparkline data={u.trend} />
+                        </div>
+                      </>
+                    )}
                   </Link>
                 );
               })}

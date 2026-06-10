@@ -9,8 +9,20 @@ import {
   YAxis,
 } from "recharts";
 import { getUseCase, monthlyTrend, type Status, type UseCase } from "@/data/useCases";
+import {
+  ChartSkeleton,
+  EmptyMessage,
+  ErrorMessage,
+  parseStateParam,
+  SkeletonLine,
+  StateToggle,
+  type DataState,
+} from "@/components/states";
 
 export const Route = createFileRoute("/use-case/$slug")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    state: parseStateParam(s.state),
+  }),
   head: ({ params }) => ({
     meta: [{ title: `Use case · ${params.slug} — Product Health Dashboard` }],
   }),
@@ -50,6 +62,16 @@ function StatusBadge({ status }: { status: Status }) {
 
 function UseCaseDetail() {
   const { uc } = Route.useLoaderData() as { uc: UseCase };
+  const { state } = Route.useSearch();
+  const navigate = Route.useNavigate();
+  const retry = () =>
+    navigate({ search: { state: "ready" as DataState }, params: { slug: Route.useParams().slug } as never });
+
+  // Top-level fetch failure short-circuits the data sections.
+  const fetchFailed = state === "error";
+  const loading = state === "loading";
+  const empty = state === "empty";
+
   const data = monthlyTrend(uc);
   const first = data[0].actual;
   const last = data[data.length - 1].actual;
@@ -70,12 +92,15 @@ function UseCaseDetail() {
     <div className="min-h-screen bg-neutral-50 font-sans text-neutral-900 tabular-nums">
       <div className="mx-auto max-w-[1280px] px-8 py-8">
         {/* Back link */}
-        <Link
-          to="/"
-          className="mb-4 inline-flex items-center gap-1 text-xs font-medium text-neutral-600 hover:text-neutral-900"
-        >
-          ← Back to dashboard
-        </Link>
+        <div className="mb-4 flex items-center justify-between">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1 text-xs font-medium text-neutral-600 hover:text-neutral-900"
+          >
+            ← Back to dashboard
+          </Link>
+          <StateToggle basePath="/use-case/$slug" current={state} />
+        </div>
 
         {/* Header */}
         <header className="mb-6 border-b border-neutral-200 pb-5">
@@ -95,13 +120,26 @@ function UseCaseDetail() {
           </div>
         </header>
 
-        {/* Metric cards */}
+        {/* Metric cards — each card skeletons / errors independently */}
         <section className="mb-6 grid grid-cols-4 gap-4">
           {cards.map((c) => (
             <div key={c.label} className="rounded-md border border-neutral-200 bg-white px-5 py-4">
               <p className="text-xs text-neutral-500">{c.label}</p>
-              <p className="mt-2 text-3xl font-semibold tracking-tight">{c.value}</p>
-              <p className="mt-2 text-xs text-neutral-500">{c.sub}</p>
+              {loading ? (
+                <>
+                  <SkeletonLine className="mt-2 h-7 w-20" />
+                  <SkeletonLine className="mt-2 h-3 w-24" />
+                </>
+              ) : fetchFailed ? (
+                <ErrorMessage onRetry={retry}>
+                  Unable to load use case data. Check your connection and try again.
+                </ErrorMessage>
+              ) : (
+                <>
+                  <p className="mt-2 text-3xl font-semibold tracking-tight">{c.value}</p>
+                  <p className="mt-2 text-xs text-neutral-500">{c.sub}</p>
+                </>
+              )}
             </div>
           ))}
         </section>
@@ -119,35 +157,48 @@ function UseCaseDetail() {
             </div>
           </div>
           <div className="h-[320px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={data} margin={{ top: 10, right: 20, bottom: 0, left: -10 }}>
-                <defs>
-                  <linearGradient id="ucFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.18} />
-                    <stop offset="100%" stopColor="#3b82f6" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid stroke="#e5e7eb" vertical={false} />
-                <XAxis dataKey="m" tick={{ fontSize: 11, fill: "#737373" }} axisLine={false} tickLine={false} />
-                <YAxis
-                  tick={{ fontSize: 11, fill: "#737373" }}
-                  axisLine={false}
-                  tickLine={false}
-                  tickFormatter={(v) => (v >= 1000 ? `${v / 1000}k` : `${v}`)}
-                />
-                <Tooltip
-                  contentStyle={{ fontSize: 12, borderRadius: 6, border: "1px solid #e5e7eb" }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="actual"
-                  stroke="#3b82f6"
-                  strokeWidth={2}
-                  fill="url(#ucFill)"
-                  name="Actual"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+            {loading ? (
+              <ChartSkeleton height={320} />
+            ) : fetchFailed ? (
+              <ErrorMessage onRetry={retry}>
+                Unable to load use case data. Check your connection and try again.
+              </ErrorMessage>
+            ) : empty ? (
+              <EmptyMessage>
+                No request data for this use case in the selected period. Data appears once the use
+                case logs its first interaction.
+              </EmptyMessage>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={data} margin={{ top: 10, right: 20, bottom: 0, left: -10 }}>
+                  <defs>
+                    <linearGradient id="ucFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.18} />
+                      <stop offset="100%" stopColor="#3b82f6" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid stroke="#e5e7eb" vertical={false} />
+                  <XAxis dataKey="m" tick={{ fontSize: 11, fill: "#737373" }} axisLine={false} tickLine={false} />
+                  <YAxis
+                    tick={{ fontSize: 11, fill: "#737373" }}
+                    axisLine={false}
+                    tickLine={false}
+                    tickFormatter={(v) => (v >= 1000 ? `${v / 1000}k` : `${v}`)}
+                  />
+                  <Tooltip
+                    contentStyle={{ fontSize: 12, borderRadius: 6, border: "1px solid #e5e7eb" }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="actual"
+                    stroke="#3b82f6"
+                    strokeWidth={2}
+                    fill="url(#ucFill)"
+                    name="Actual"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
           </div>
         </section>
 
@@ -163,13 +214,25 @@ function UseCaseDetail() {
                 className="grid grid-cols-[120px_1fr_48px] items-center gap-3 text-xs"
               >
                 <span className="text-neutral-700">{d.name}</span>
-                <div className="h-2 w-full rounded-full bg-neutral-100">
-                  <div
-                    className="h-full rounded-full bg-sky-500"
-                    style={{ width: `${(d.share / maxDept) * 100}%` }}
-                  />
-                </div>
-                <span className="text-right font-medium text-neutral-900">{d.share}%</span>
+                {loading ? (
+                  <SkeletonLine className="h-2 w-full" />
+                ) : fetchFailed || empty ? (
+                  <span className="text-neutral-400">No activity this period</span>
+                ) : (
+                  <div className="h-2 w-full rounded-full bg-neutral-100">
+                    <div
+                      className="h-full rounded-full bg-sky-500"
+                      style={{ width: `${(d.share / maxDept) * 100}%` }}
+                    />
+                  </div>
+                )}
+                {loading ? (
+                  <SkeletonLine className="ml-auto h-3 w-8" />
+                ) : fetchFailed || empty ? (
+                  <span className="text-right text-neutral-400">—</span>
+                ) : (
+                  <span className="text-right font-medium text-neutral-900">{d.share}%</span>
+                )}
               </div>
             ))}
           </div>

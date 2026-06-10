@@ -59,19 +59,26 @@ const PIPELINE = [
 ];
 
 type Status = "Live" | "Beta" | "Pilot";
-const USE_CASES: { name: string; status: Status; count: number; growth: string; isNew?: boolean }[] = [
-  { name: "IT service request", status: "Live", count: 1420, growth: "+12%" },
-  { name: "Knowledge base Q&A", status: "Live", count: 890, growth: "+8%" },
-  { name: "Incident triage", status: "Live", count: 670, growth: "+22%" },
-  { name: "HR policy assistant", status: "Live", count: 540, growth: "+5%" },
-  { name: "Contract review", status: "Live", count: 380, growth: "+18%" },
-  { name: "Meeting summary", status: "Live", count: 290, growth: "+31%" },
-  { name: "Code review assist", status: "Live", count: 180, growth: "+44%" },
-  { name: "Security alerts", status: "Live", count: 145, growth: "+9%" },
-  { name: "Vendor management", status: "Beta", count: 89, growth: "+61%" },
-  { name: "Procurement assist", status: "Beta", count: 67, growth: "+88%" },
-  { name: "Change management", status: "Pilot", count: 18, growth: "New", isNew: true },
-  { name: "Asset management", status: "Pilot", count: 12, growth: "New", isNew: true },
+const USE_CASES: {
+  name: string;
+  status: Status;
+  count: number;
+  growth: string;
+  isNew?: boolean;
+  trend: [number, number, number];
+}[] = [
+  { name: "IT service request", status: "Live", count: 1420, growth: "+12%", trend: [1260, 1340, 1420] },
+  { name: "Knowledge base Q&A", status: "Live", count: 890, growth: "+8%", trend: [820, 855, 890] },
+  { name: "Incident triage", status: "Live", count: 670, growth: "+22%", trend: [545, 605, 670] },
+  { name: "HR policy assistant", status: "Live", count: 540, growth: "+5%", trend: [515, 528, 540] },
+  { name: "Contract review", status: "Live", count: 380, growth: "+18%", trend: [320, 350, 380] },
+  { name: "Meeting summary", status: "Live", count: 290, growth: "+31%", trend: [220, 255, 290] },
+  { name: "Code review assist", status: "Live", count: 180, growth: "+44%", trend: [125, 152, 180] },
+  { name: "Security alerts", status: "Live", count: 145, growth: "+9%", trend: [132, 138, 145] },
+  { name: "Vendor management", status: "Beta", count: 89, growth: "+61%", trend: [55, 71, 89] },
+  { name: "Procurement assist", status: "Beta", count: 67, growth: "+88%", trend: [36, 51, 67] },
+  { name: "Change management", status: "Pilot", count: 18, growth: "New", isNew: true, trend: [0, 8, 18] },
+  { name: "Asset management", status: "Pilot", count: 12, growth: "New", isNew: true, trend: [0, 5, 12] },
 ];
 
 const MAX_USE_CASE = Math.max(...USE_CASES.map((u) => u.count));
@@ -162,6 +169,64 @@ const ROAD_EDGE: Record<RoadStatus, string> = {
   Planned: "border-l-amber-500",
   Backlog: "border-l-neutral-300",
 };
+
+function parseGrowth(growth: string): number | null {
+  const m = growth.match(/^\+?(\d+)%$/);
+  return m ? parseInt(m[1], 10) : null;
+}
+
+function GrowthBadge({ growth, isNew }: { growth: string; isNew?: boolean }) {
+  if (isNew) {
+    return (
+      <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
+        {growth}
+      </span>
+    );
+  }
+  const val = parseGrowth(growth);
+  let classes = "inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-semibold ";
+  if (val === null) {
+    classes += "border-neutral-200 bg-neutral-100 text-neutral-600";
+  } else if (val <= 10) {
+    classes += "border-emerald-200 bg-emerald-50/70 text-emerald-600";
+  } else if (val <= 30) {
+    classes += "border-emerald-200 bg-emerald-100 text-emerald-700";
+  } else {
+    classes += "border-emerald-300 bg-emerald-200 text-emerald-800";
+  }
+  return <span className={classes}>{growth}</span>;
+}
+
+function MiniSparkline({ data }: { data: [number, number, number] }) {
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  const range = max - min || 1;
+  const w = 28;
+  const h = 14;
+  const pad = 2;
+  const points = data.map((v, i) => {
+    const x = pad + (i / (data.length - 1)) * (w - pad * 2);
+    const y = h - pad - ((v - min) / range) * (h - pad * 2);
+    return `${x},${y}`;
+  });
+  return (
+    <svg width={w} height={h} className="inline-block" viewBox={`0 0 ${w} ${h}`}>
+      <polyline
+        fill="none"
+        stroke="#10b981"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        points={points.join(" ")}
+      />
+      {data.map((v, i) => {
+        const x = pad + (i / (data.length - 1)) * (w - pad * 2);
+        const y = h - pad - ((v - min) / range) * (h - pad * 2);
+        return <circle key={i} cx={x} cy={y} r="1.5" fill="#10b981" />;
+      })}
+    </svg>
+  );
+}
 
 // ---------- Component ----------
 
@@ -332,7 +397,7 @@ function Dashboard() {
                 return (
                   <div
                     key={u.name}
-                    className={`grid grid-cols-[180px_60px_1fr_60px_50px] items-center gap-3 rounded px-1 py-1 text-xs ${
+                    className={`grid grid-cols-[180px_60px_1fr_60px_86px] items-center gap-3 rounded px-1 py-1 text-xs ${
                       isBreakout ? "bg-amber-50/60" : ""
                     }`}
                   >
@@ -353,13 +418,10 @@ function Dashboard() {
                     <span className="text-right font-medium text-neutral-900">
                       {u.count.toLocaleString()}
                     </span>
-                    <span
-                      className={`text-right text-xs ${
-                        u.isNew ? "text-neutral-400" : "text-emerald-600"
-                      } ${isBreakout ? "font-semibold" : ""}`}
-                    >
-                      {u.growth}
-                    </span>
+                    <div className="flex items-center justify-end gap-1.5">
+                      <GrowthBadge growth={u.growth} isNew={u.isNew} />
+                      <MiniSparkline data={u.trend} />
+                    </div>
                   </div>
                 );
               })}

@@ -14,7 +14,254 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      field_signals: {
+        Row: {
+          attribution: string
+          created_at: string
+          id: string
+          quote: string
+          sort_order: number
+        }
+        Insert: {
+          attribution: string
+          created_at?: string
+          id?: string
+          quote: string
+          sort_order?: number
+        }
+        Update: {
+          attribution?: string
+          created_at?: string
+          id?: string
+          quote?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      forecast_items: {
+        Row: {
+          created_at: string
+          id: string
+          label: string
+          sort_order: number
+          sub: string
+          value: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          label: string
+          sort_order?: number
+          sub: string
+          value: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          label?: string
+          sort_order?: number
+          sub?: string
+          value?: string
+        }
+        Relationships: []
+      }
+      kpis: {
+        Row: {
+          created_at: string
+          delta: string
+          id: string
+          label: string
+          sort_order: number
+          value: string
+        }
+        Insert: {
+          created_at?: string
+          delta: string
+          id?: string
+          label: string
+          sort_order?: number
+          value: string
+        }
+        Update: {
+          created_at?: string
+          delta?: string
+          id?: string
+          label?: string
+          sort_order?: number
+          value?: string
+        }
+        Relationships: []
+      }
+      pipeline_stages: {
+        Row: {
+          created_at: string
+          id: string
+          sort_order: number
+          stage: string
+          value: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          sort_order?: number
+          stage: string
+          value: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          sort_order?: number
+          stage?: string
+          value?: number
+        }
+        Relationships: []
+      }
+      roadmap_columns: {
+        Row: {
+          badge: string
+          created_at: string
+          dot: string
+          id: string
+          quarter: string
+          sort_order: number
+        }
+        Insert: {
+          badge?: string
+          created_at?: string
+          dot?: string
+          id?: string
+          quarter: string
+          sort_order?: number
+        }
+        Update: {
+          badge?: string
+          created_at?: string
+          dot?: string
+          id?: string
+          quarter?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      roadmap_items: {
+        Row: {
+          column_id: string
+          created_at: string
+          id: string
+          sort_order: number
+          status: string
+          tag: string
+          title: string
+        }
+        Insert: {
+          column_id: string
+          created_at?: string
+          id?: string
+          sort_order?: number
+          status: string
+          tag: string
+          title: string
+        }
+        Update: {
+          column_id?: string
+          created_at?: string
+          id?: string
+          sort_order?: number
+          status?: string
+          tag?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roadmap_items_column_id_fkey"
+            columns: ["column_id"]
+            isOneToOne: false
+            referencedRelation: "roadmap_columns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      traffic_points: {
+        Row: {
+          actual: number | null
+          created_at: string
+          forecast: number | null
+          id: string
+          month: string
+          sort_order: number
+        }
+        Insert: {
+          actual?: number | null
+          created_at?: string
+          forecast?: number | null
+          id?: string
+          month: string
+          sort_order?: number
+        }
+        Update: {
+          actual?: number | null
+          created_at?: string
+          forecast?: number | null
+          id?: string
+          month?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      use_cases: {
+        Row: {
+          active_users: number
+          category: string
+          count: number
+          created_at: string
+          departments: Json
+          growth: string
+          id: string
+          is_new: boolean
+          name: string
+          resolution_rate: number
+          slug: string
+          sort_order: number
+          status: string
+          trend: number[]
+          updated_at: string
+        }
+        Insert: {
+          active_users?: number
+          category: string
+          count?: number
+          created_at?: string
+          departments?: Json
+          growth: string
+          id?: string
+          is_new?: boolean
+          name: string
+          resolution_rate?: number
+          slug: string
+          sort_order?: number
+          status: string
+          trend?: number[]
+          updated_at?: string
+        }
+        Update: {
+          active_users?: number
+          category?: string
+          count?: number
+          created_at?: string
+          departments?: Json
+          growth?: string
+          id?: string
+          is_new?: boolean
+          name?: string
+          resolution_rate?: number
+          slug?: string
+          sort_order?: number
+          status?: string
+          trend?: number[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

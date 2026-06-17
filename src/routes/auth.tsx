@@ -59,6 +59,11 @@ function AuthPage() {
         <h1 className="mt-1 text-2xl font-semibold tracking-tight">
           {mode === "signin" ? "Sign in" : "Create account"}
         </h1>
+        {flash && (
+          <p className="mt-3 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+            {flash}
+          </p>
+        )}
         <form onSubmit={onSubmit} className="mt-5 space-y-3">
           <div>
             <label className="text-xs text-neutral-600">Email</label>

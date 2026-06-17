@@ -99,7 +99,7 @@ export function DashboardScreen({
               </h1>
             </div>
             <div className="flex items-center gap-4 text-xs text-neutral-500">
-              <StateToggle basePath="/" current={state} />
+              <StateToggle basePath="/" current={urlState} />
               <span>Q2 2026 · Jun 4</span>
               <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-medium uppercase tracking-wider text-emerald-700">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />

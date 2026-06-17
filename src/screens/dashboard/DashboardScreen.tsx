@@ -281,62 +281,65 @@ export function DashboardScreen({
 
           <div className="col-span-2 rounded-md border border-neutral-200 bg-white p-5">
             <h2 className="mb-4 text-[11px] font-medium uppercase tracking-[0.15em] text-neutral-500">
-              Use case activity — {useCases.length} total · monthly requests
+              Use case activity — {state === "ready" ? useCases.length : "—"} total · monthly requests
             </h2>
-            <div className="space-y-2">
-              {useCases.map((u) => {
-                const isLoading = state === "loading";
-                const isEmpty = state === "empty" || u.count === 0;
-                const pct = (u.count / maxUseCase) * 100;
-                const isBreakout = u.name === "Code review assist" && !isLoading && !isEmpty;
-                return (
-                  <Link
-                    key={u.id}
-                    to="/use-case/$slug"
-                    params={{ slug: slugify(u.name) }}
-                    className={`grid grid-cols-[180px_60px_1fr_60px_86px] items-center gap-3 rounded px-1 py-1 text-xs transition-colors hover:bg-neutral-100 ${
-                      isBreakout ? "bg-amber-50/60 hover:bg-amber-100/60" : ""
-                    }`}
-                  >
-                    <span className="truncate text-neutral-800">{u.name}</span>
-                    <StatusBadge status={u.status} />
-                    {isLoading ? (
-                      <>
-                        <SkeletonLine className="h-1.5 w-full" />
-                        <SkeletonLine className="ml-auto h-3 w-12" />
-                        <SkeletonLine className="ml-auto h-4 w-20" />
-                      </>
-                    ) : isEmpty ? (
-                      <span className="col-span-3 text-right text-neutral-400">
-                        No activity this period
-                      </span>
-                    ) : (
-                      <>
-                        <div className="h-1.5 w-full rounded-full bg-neutral-100">
-                          <div
-                            className={`h-full rounded-full ${
-                              u.status === "Live"
-                                ? "bg-sky-500"
-                                : u.status === "Beta"
-                                  ? "bg-amber-500"
-                                  : "bg-neutral-300"
-                            }`}
-                            style={{ width: `${pct}%` }}
-                          />
-                        </div>
-                        <span className="text-right font-medium text-neutral-900">
-                          {u.count.toLocaleString()}
+            {state === "loading" ? (
+              <BarChartSkeleton height={230} rows={6} />
+            ) : state === "error" ? (
+              <ErrorMessage onRetry={onRetry}>
+                Couldn't load use case activity. Check your connection and try again.
+              </ErrorMessage>
+            ) : state === "empty" || useCases.length === 0 ? (
+              <EmptyMessage>No use cases yet. Once you log activity, it appears here.</EmptyMessage>
+            ) : (
+              <div className="space-y-2">
+                {useCases.map((u) => {
+                  const isEmpty = u.count === 0;
+                  const pct = (u.count / maxUseCase) * 100;
+                  const isBreakout = u.name === "Code review assist" && !isEmpty;
+                  return (
+                    <Link
+                      key={u.id}
+                      to="/use-case/$slug"
+                      params={{ slug: slugify(u.name) }}
+                      className={`grid grid-cols-[180px_60px_1fr_60px_86px] items-center gap-3 rounded px-1 py-1 text-xs transition-colors hover:bg-neutral-100 ${
+                        isBreakout ? "bg-amber-50/60 hover:bg-amber-100/60" : ""
+                      }`}
+                    >
+                      <span className="truncate text-neutral-800">{u.name}</span>
+                      <StatusBadge status={u.status} />
+                      {isEmpty ? (
+                        <span className="col-span-3 text-right text-neutral-400">
+                          No activity this period
                         </span>
-                        <div className="flex items-center justify-end gap-1.5">
-                          <GrowthBadge growth={u.growth} isNew={u.isNew} />
-                          <MiniSparkline data={u.trend} />
-                        </div>
-                      </>
-                    )}
-                  </Link>
-                );
-              })}
-            </div>
+                      ) : (
+                        <>
+                          <div className="h-1.5 w-full rounded-full bg-neutral-100">
+                            <div
+                              className={`h-full rounded-full ${
+                                u.status === "Live"
+                                  ? "bg-sky-500"
+                                  : u.status === "Beta"
+                                    ? "bg-amber-500"
+                                    : "bg-neutral-300"
+                              }`}
+                              style={{ width: `${pct}%` }}
+                            />
+                          </div>
+                          <span className="text-right font-medium text-neutral-900">
+                            {u.count.toLocaleString()}
+                          </span>
+                          <div className="flex items-center justify-end gap-1.5">
+                            <GrowthBadge growth={u.growth} isNew={u.isNew} />
+                            <MiniSparkline data={u.trend} />
+                          </div>
+                        </>
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </section>
 

@@ -92,10 +92,10 @@ export function ErrorMessage({
 }
 
 // Amber inline cached-data badge for KPI cards.
-export function CachedBadge({ onRetry, date = "Jun 3" }: { onRetry?: () => void; date?: string }) {
+export function CachedBadge({ onRetry, date }: { onRetry?: () => void; date?: string }) {
   return (
     <span className="mt-2 inline-flex items-center gap-1 rounded-sm border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium text-amber-700">
-      Showing cached data · {date} ·{" "}
+      Showing cached data · {date ?? "earlier"} ·{" "}
       <button
         type="button"
         onClick={onRetry}
@@ -105,6 +105,19 @@ export function CachedBadge({ onRetry, date = "Jun 3" }: { onRetry?: () => void;
       </button>
     </span>
   );
+}
+
+// Format a Date as "Jun 3, 10:42 AM"-style for the cached badge.
+export function formatCachedAt(d: Date | number | undefined): string | undefined {
+  if (!d) return undefined;
+  const date = typeof d === "number" ? new Date(d) : d;
+  if (Number.isNaN(date.getTime())) return undefined;
+  return date.toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
 }
 
 // Green checkmark "all clear" used by alerts panel.

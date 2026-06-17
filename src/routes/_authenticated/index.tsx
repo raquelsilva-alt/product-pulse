@@ -3,7 +3,7 @@ import { DashboardScreen } from "@/screens/dashboard/DashboardScreen";
 import { parseStateParam, type DataState } from "@/components/states";
 import { dashboardQueryOptions } from "@/lib/queries";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_authenticated/")({
   validateSearch: (s: Record<string, unknown>) => ({
     state: parseStateParam(s.state),
   }),

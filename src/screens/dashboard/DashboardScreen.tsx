@@ -176,8 +176,10 @@ export function DashboardScreen({
               <ChartSkeleton height={320} />
             ) : state === "error" ? (
               <ErrorMessage onRetry={onRetry}>
-                Data connection interrupted. Last successful sync: Jun 3, 2026.
+                Couldn't load traffic data. Check your connection and try again.
               </ErrorMessage>
+            ) : state === "empty" ? (
+              <EmptyMessage>No traffic recorded yet for this period.</EmptyMessage>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={traffic} margin={{ top: 10, right: 20, bottom: 0, left: -10 }}>

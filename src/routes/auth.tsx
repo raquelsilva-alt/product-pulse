@@ -3,6 +3,9 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/auth")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    flash: typeof s.flash === "string" ? s.flash : undefined,
+  }),
   head: () => ({
     meta: [{ title: "Sign in · Measure it" }],
   }),

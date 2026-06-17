@@ -142,8 +142,10 @@ export function AllClear({ children }: { children: React.ReactNode }) {
 }
 
 // Helper: derive state from a `?state=` search param for demoing.
-export function parseStateParam(v: unknown): DataState {
-  return v === "loading" || v === "empty" || v === "error" ? v : "ready";
+// Returns undefined when the param is missing/invalid, so callers can distinguish
+// "no override" from an explicit override (used to gate dev-only overrides).
+export function parseStateParam(v: unknown): DataState | undefined {
+  return v === "loading" || v === "empty" || v === "error" || v === "ready" ? v : undefined;
 }
 
 // Small inline state-toggle for demo / QA.

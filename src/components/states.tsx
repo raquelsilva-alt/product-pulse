@@ -154,7 +154,7 @@ export function StateToggle({
   current,
 }: {
   basePath: "/" | "/use-case/$slug";
-  current: DataState;
+  current: DataState | undefined;
 }) {
   const states: DataState[] = ["ready", "loading", "empty", "error"];
   return (

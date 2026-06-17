@@ -1,7 +1,6 @@
-// Dashboard screen — pure presentation. Data fetched via TanStack Query from Supabase.
+// Dashboard screen — pure presentation. Data + state are passed in by the route.
 
 import { Link } from "@tanstack/react-router";
-import { useSuspenseQuery } from "@tanstack/react-query";
 import {
   Area,
   AreaChart,
@@ -17,12 +16,13 @@ import {
   BarChartSkeleton,
   CachedBadge,
   ChartSkeleton,
+  EmptyMessage,
   ErrorMessage,
   SkeletonLine,
   StateToggle,
   type DataState,
 } from "@/components/states";
-import { dashboardQueryOptions, slugify } from "@/lib/queries";
+import { slugify, type DashboardData } from "@/lib/queries";
 import {
   GrowthBadge,
   MiniSparkline,
@@ -31,16 +31,58 @@ import {
   StatusBadge,
 } from "./badges";
 
+// Placeholder shape rendered during loading/error so layout stays stable.
+const PLACEHOLDER_DATA: DashboardData = {
+  kpis: [
+    { label: "Monthly requests", value: "—", delta: "—" },
+    { label: "Active users", value: "—", delta: "—" },
+    { label: "Resolution rate", value: "—", delta: "—" },
+    { label: "Health score", value: "—", delta: "—" },
+  ],
+  traffic: [],
+  pipeline: [
+    { stage: "Signed up", value: 0 },
+    { stage: "Activated", value: 0 },
+    { stage: "Engaged", value: 0 },
+    { stage: "Power user", value: 0 },
+    { stage: "Champion", value: 0 },
+  ],
+  useCases: [],
+  roadmap: [
+    { quarter: "Q2 · 2026", badge: "CURRENT", dot: "bg-sky-500", items: [] },
+    { quarter: "Q3 · 2026", badge: "", dot: "bg-amber-600", items: [] },
+    { quarter: "Q4 · 2026", badge: "", dot: "bg-neutral-400", items: [] },
+  ],
+  forecast: [
+    { label: "—", value: "—", sub: "—" },
+    { label: "—", value: "—", sub: "—" },
+    { label: "—", value: "—", sub: "—" },
+    { label: "—", value: "—", sub: "—" },
+  ],
+  fieldSignals: [],
+};
+
 export type DashboardScreenProps = {
   state: DataState;
+  urlState: DataState | undefined;
+  data: DashboardData | undefined;
+  cachedAt?: string;
   onRetry: () => void;
   userEmail?: string;
   onSignOut?: () => void;
 };
 
-export function DashboardScreen({ state, onRetry, userEmail, onSignOut }: DashboardScreenProps) {
-  const { data } = useSuspenseQuery(dashboardQueryOptions());
-  const { kpis, traffic, pipeline, useCases, roadmap, forecast, fieldSignals } = data;
+export function DashboardScreen({
+  state,
+  urlState,
+  data,
+  cachedAt,
+  onRetry,
+  userEmail,
+  onSignOut,
+}: DashboardScreenProps) {
+  const view = data ?? PLACEHOLDER_DATA;
+  const { kpis, traffic, pipeline, useCases, roadmap, forecast, fieldSignals } = view;
   const maxUseCase = Math.max(1, ...useCases.map((u) => u.count));
 
   return (

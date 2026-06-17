@@ -132,7 +132,7 @@ export function DashboardScreen({
               <p className="text-xs text-neutral-500">{k.label}</p>
               {state === "loading" ? (
                 <SkeletonLine className="mt-2 h-7 w-20" />
-              ) : state === "error" ? (
+              ) : state === "error" || state === "empty" ? (
                 <p className="mt-2 text-3xl font-semibold tracking-tight text-neutral-400">—</p>
               ) : (
                 <p className="mt-2 text-3xl font-semibold tracking-tight">{k.value}</p>
@@ -141,6 +141,8 @@ export function DashboardScreen({
                 <SkeletonLine className="mt-2 h-3 w-24" />
               ) : state === "error" ? (
                 <CachedBadge onRetry={onRetry} date={cachedAt} />
+              ) : state === "empty" ? (
+                <p className="mt-2 text-xs text-neutral-400">No data yet</p>
               ) : (
                 <p className="mt-2 text-xs text-emerald-600">↑ {k.delta}</p>
               )}

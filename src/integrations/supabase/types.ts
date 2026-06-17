@@ -21,6 +21,7 @@ export type Database = {
           id: string
           quote: string
           sort_order: number
+          user_id: string
         }
         Insert: {
           attribution: string
@@ -28,6 +29,7 @@ export type Database = {
           id?: string
           quote: string
           sort_order?: number
+          user_id: string
         }
         Update: {
           attribution?: string
@@ -35,16 +37,18 @@ export type Database = {
           id?: string
           quote?: string
           sort_order?: number
+          user_id?: string
         }
         Relationships: []
       }
-      forecast_items: {
+      forecast_summary: {
         Row: {
           created_at: string
           id: string
           label: string
           sort_order: number
-          sub: string
+          sub: string | null
+          user_id: string
           value: string
         }
         Insert: {
@@ -52,7 +56,8 @@ export type Database = {
           id?: string
           label: string
           sort_order?: number
-          sub: string
+          sub?: string | null
+          user_id: string
           value: string
         }
         Update: {
@@ -60,7 +65,8 @@ export type Database = {
           id?: string
           label?: string
           sort_order?: number
-          sub?: string
+          sub?: string | null
+          user_id?: string
           value?: string
         }
         Relationships: []
@@ -71,7 +77,9 @@ export type Database = {
           delta: string
           id: string
           label: string
+          period: string | null
           sort_order: number
+          user_id: string
           value: string
         }
         Insert: {
@@ -79,7 +87,9 @@ export type Database = {
           delta: string
           id?: string
           label: string
+          period?: string | null
           sort_order?: number
+          user_id: string
           value: string
         }
         Update: {
@@ -87,7 +97,9 @@ export type Database = {
           delta?: string
           id?: string
           label?: string
+          period?: string | null
           sort_order?: number
+          user_id?: string
           value?: string
         }
         Relationships: []
@@ -98,6 +110,7 @@ export type Database = {
           id: string
           sort_order: number
           stage: string
+          user_id: string
           value: number
         }
         Insert: {
@@ -105,6 +118,7 @@ export type Database = {
           id?: string
           sort_order?: number
           stage: string
+          user_id: string
           value: number
         }
         Update: {
@@ -112,76 +126,45 @@ export type Database = {
           id?: string
           sort_order?: number
           stage?: string
+          user_id?: string
           value?: number
-        }
-        Relationships: []
-      }
-      roadmap_columns: {
-        Row: {
-          badge: string
-          created_at: string
-          dot: string
-          id: string
-          quarter: string
-          sort_order: number
-        }
-        Insert: {
-          badge?: string
-          created_at?: string
-          dot?: string
-          id?: string
-          quarter: string
-          sort_order?: number
-        }
-        Update: {
-          badge?: string
-          created_at?: string
-          dot?: string
-          id?: string
-          quarter?: string
-          sort_order?: number
         }
         Relationships: []
       }
       roadmap_items: {
         Row: {
-          column_id: string
           created_at: string
           id: string
+          quarter: string
           sort_order: number
           status: string
           tag: string
           title: string
+          user_id: string
         }
         Insert: {
-          column_id: string
           created_at?: string
           id?: string
+          quarter: string
           sort_order?: number
           status: string
-          tag: string
+          tag?: string
           title: string
+          user_id: string
         }
         Update: {
-          column_id?: string
           created_at?: string
           id?: string
+          quarter?: string
           sort_order?: number
           status?: string
           tag?: string
           title?: string
+          user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "roadmap_items_column_id_fkey"
-            columns: ["column_id"]
-            isOneToOne: false
-            referencedRelation: "roadmap_columns"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
-      traffic_points: {
+      traffic_monthly: {
         Row: {
           actual: number | null
           created_at: string
@@ -189,6 +172,7 @@ export type Database = {
           id: string
           month: string
           sort_order: number
+          user_id: string
         }
         Insert: {
           actual?: number | null
@@ -197,6 +181,7 @@ export type Database = {
           id?: string
           month: string
           sort_order?: number
+          user_id: string
         }
         Update: {
           actual?: number | null
@@ -205,6 +190,7 @@ export type Database = {
           id?: string
           month?: string
           sort_order?: number
+          user_id?: string
         }
         Relationships: []
       }
@@ -220,28 +206,26 @@ export type Database = {
           is_new: boolean
           name: string
           resolution_rate: number
-          slug: string
           sort_order: number
           status: string
           trend: number[]
-          updated_at: string
+          user_id: string
         }
         Insert: {
           active_users?: number
-          category: string
+          category?: string
           count?: number
           created_at?: string
           departments?: Json
-          growth: string
+          growth?: string
           id?: string
           is_new?: boolean
           name: string
           resolution_rate?: number
-          slug: string
           sort_order?: number
           status: string
           trend?: number[]
-          updated_at?: string
+          user_id: string
         }
         Update: {
           active_users?: number
@@ -254,11 +238,31 @@ export type Database = {
           is_new?: boolean
           name?: string
           resolution_rate?: number
-          slug?: string
           sort_order?: number
           status?: string
           trend?: number[]
-          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          id: string
+          org_name: string | null
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          id: string
+          org_name?: string | null
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          org_name?: string | null
         }
         Relationships: []
       }

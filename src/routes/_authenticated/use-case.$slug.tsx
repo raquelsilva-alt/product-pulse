@@ -9,7 +9,14 @@ export const Route = createFileRoute("/_authenticated/use-case/$slug")({
     state: parseStateParam(s.state),
   }),
   head: ({ params }) => ({
-    meta: [{ title: `Use case · ${params.slug} — Product Health Dashboard` }],
+    meta: [
+      { title: `Use case · ${params.slug} — Product Health Dashboard` },
+      { name: "description", content: "View use case details on Measure it — status, impact, owner, and timeline." },
+      { property: "og:title", content: `Use case · ${params.slug} — Product Health Dashboard` },
+      { property: "og:description", content: "View use case details on Measure it — status, impact, owner, and timeline." },
+      { property: "og:url", content: `/use-case/${params.slug}` },
+    ],
+    links: [{ rel: "canonical", href: `/use-case/${params.slug}` }],
   }),
   // Prefetch without awaiting so the component owns its loading state.
   loader: ({ context }) => {

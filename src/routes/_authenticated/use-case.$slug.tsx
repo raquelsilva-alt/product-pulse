@@ -3,7 +3,7 @@ import { parseStateParam, type DataState } from "@/components/states";
 import { UseCaseDetailScreen } from "@/screens/use-case/UseCaseDetailScreen";
 import { useCasesQueryOptions, slugify } from "@/lib/queries";
 
-export const Route = createFileRoute("/use-case/$slug")({
+export const Route = createFileRoute("/_authenticated/use-case/$slug")({
   validateSearch: (s: Record<string, unknown>) => ({
     state: parseStateParam(s.state),
   }),

@@ -34,9 +34,11 @@ import {
 export type DashboardScreenProps = {
   state: DataState;
   onRetry: () => void;
+  userEmail?: string;
+  onSignOut?: () => void;
 };
 
-export function DashboardScreen({ state, onRetry }: DashboardScreenProps) {
+export function DashboardScreen({ state, onRetry, userEmail, onSignOut }: DashboardScreenProps) {
   const { data } = useSuspenseQuery(dashboardQueryOptions());
   const { kpis, traffic, pipeline, useCases, roadmap, forecast, fieldSignals } = data;
   const maxUseCase = Math.max(1, ...useCases.map((u) => u.count));
@@ -61,6 +63,18 @@ export function DashboardScreen({ state, onRetry }: DashboardScreenProps) {
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                 Healthy · 82/100
               </span>
+              {userEmail && (
+                <span className="text-neutral-700">{userEmail}</span>
+              )}
+              {onSignOut && (
+                <button
+                  type="button"
+                  onClick={onSignOut}
+                  className="rounded border border-neutral-300 bg-white px-2.5 py-1 text-[11px] font-medium text-neutral-700 hover:bg-neutral-100"
+                >
+                  Sign out
+                </button>
+              )}
             </div>
           </div>
         </header>

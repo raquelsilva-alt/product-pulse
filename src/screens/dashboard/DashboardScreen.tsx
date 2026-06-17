@@ -81,7 +81,9 @@ export function DashboardScreen({
   userEmail,
   onSignOut,
 }: DashboardScreenProps) {
-  const view = data ?? PLACEHOLDER_DATA;
+  // Placeholder shape keeps the layout intact for loading / error / empty;
+  // sections render their own skeleton/error/empty overlays on top.
+  const view = state === "ready" ? (data ?? PLACEHOLDER_DATA) : PLACEHOLDER_DATA;
   const { kpis, traffic, pipeline, useCases, roadmap, forecast, fieldSignals } = view;
   const maxUseCase = Math.max(1, ...useCases.map((u) => u.count));
 

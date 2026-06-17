@@ -240,8 +240,10 @@ export function DashboardScreen({
                 <BarChartSkeleton height={230} rows={5} />
               ) : state === "error" ? (
                 <ErrorMessage onRetry={onRetry}>
-                  Data connection interrupted. Last successful sync: Jun 3, 2026.
+                  Couldn't load pipeline data. Check your connection and try again.
                 </ErrorMessage>
+              ) : state === "empty" ? (
+                <EmptyMessage>No pipeline data yet.</EmptyMessage>
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={pipeline} layout="vertical" margin={{ top: 0, right: 20, bottom: 0, left: 10 }}>

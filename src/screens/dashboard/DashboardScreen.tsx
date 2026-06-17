@@ -400,10 +400,22 @@ export function DashboardScreen({
                 <p className="text-[10px] font-medium uppercase tracking-wider text-neutral-500">
                   {f.label}
                 </p>
-                <p className="mt-2 text-2xl font-semibold tracking-tight text-amber-900">
-                  {f.value}
-                </p>
-                <p className="mt-1 text-xs text-neutral-500">{f.sub}</p>
+                {state === "loading" ? (
+                  <SkeletonLine className="mt-2 h-6 w-16" />
+                ) : state === "error" || state === "empty" ? (
+                  <p className="mt-2 text-2xl font-semibold tracking-tight text-neutral-400">—</p>
+                ) : (
+                  <p className="mt-2 text-2xl font-semibold tracking-tight text-amber-900">
+                    {f.value}
+                  </p>
+                )}
+                {state === "loading" ? (
+                  <SkeletonLine className="mt-2 h-3 w-20" />
+                ) : state === "error" || state === "empty" ? (
+                  <p className="mt-1 text-xs text-neutral-400">—</p>
+                ) : (
+                  <p className="mt-1 text-xs text-neutral-500">{f.sub}</p>
+                )}
               </div>
             ))}
           </div>

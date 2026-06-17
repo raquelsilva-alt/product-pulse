@@ -425,17 +425,27 @@ export function DashboardScreen({
           <h2 className="mb-4 text-[11px] font-medium uppercase tracking-[0.15em] text-neutral-500">
             Field signals
           </h2>
-          <div className="grid grid-cols-3 gap-4 text-sm">
-            {fieldSignals.map((s) => (
-              <blockquote
-                key={s.a}
-                className="border-l-2 border-sky-300 bg-neutral-50/60 px-4 py-3"
-              >
-                <p className="italic text-neutral-700">"{s.q}"</p>
-                <footer className="mt-2 text-xs text-neutral-500">— {s.a}</footer>
-              </blockquote>
-            ))}
-          </div>
+          {state === "loading" ? (
+            <BarChartSkeleton height={120} rows={3} />
+          ) : state === "error" ? (
+            <ErrorMessage onRetry={onRetry}>
+              Couldn't load field signals. Check your connection and try again.
+            </ErrorMessage>
+          ) : state === "empty" || fieldSignals.length === 0 ? (
+            <EmptyMessage>No field signals captured yet.</EmptyMessage>
+          ) : (
+            <div className="grid grid-cols-3 gap-4 text-sm">
+              {fieldSignals.map((s) => (
+                <blockquote
+                  key={s.a}
+                  className="border-l-2 border-sky-300 bg-neutral-50/60 px-4 py-3"
+                >
+                  <p className="italic text-neutral-700">"{s.q}"</p>
+                  <footer className="mt-2 text-xs text-neutral-500">— {s.a}</footer>
+                </blockquote>
+              ))}
+            </div>
+          )}
         </section>
 
         <footer className="border-t border-neutral-200 pt-4 text-center text-xs text-neutral-400">

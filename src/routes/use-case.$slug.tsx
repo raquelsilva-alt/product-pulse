@@ -1,7 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { getUseCase, type UseCase } from "@/data/useCases";
 import { parseStateParam, type DataState } from "@/components/states";
 import { UseCaseDetailScreen } from "@/screens/use-case/UseCaseDetailScreen";
+import { useCasesQueryOptions, slugify } from "@/lib/queries";
 
 export const Route = createFileRoute("/use-case/$slug")({
   validateSearch: (s: Record<string, unknown>) => ({
@@ -10,10 +10,10 @@ export const Route = createFileRoute("/use-case/$slug")({
   head: ({ params }) => ({
     meta: [{ title: `Use case · ${params.slug} — Product Health Dashboard` }],
   }),
-  loader: ({ params }) => {
-    const uc = getUseCase(params.slug);
+  loader: async ({ context, params }) => {
+    const list = await context.queryClient.ensureQueryData(useCasesQueryOptions());
+    const uc = list.find((u) => slugify(u.name) === params.slug);
     if (!uc) throw notFound();
-    return { uc };
   },
   notFoundComponent: () => (
     <div className="p-10 text-sm text-neutral-600">
@@ -30,11 +30,10 @@ export const Route = createFileRoute("/use-case/$slug")({
 });
 
 function UseCaseDetailRoute() {
-  const { uc } = Route.useLoaderData() as { uc: UseCase };
   const { state } = Route.useSearch();
   const params = Route.useParams();
   const navigate = Route.useNavigate();
   const onRetry = () =>
     navigate({ search: { state: "ready" as DataState }, params });
-  return <UseCaseDetailScreen uc={uc} state={state} onRetry={onRetry} />;
+  return <UseCaseDetailScreen slug={params.slug} state={state} onRetry={onRetry} />;
 }

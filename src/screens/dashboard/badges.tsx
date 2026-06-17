@@ -1,7 +1,6 @@
 // Presentational badges + sparkline used only by the Dashboard screen.
 
-import type { Status } from "@/data/useCases";
-import type { RoadStatus } from "./data";
+import type { Status, RoadStatus } from "@/lib/queries";
 
 export function StatusBadge({ status }: { status: Status }) {
   const styles: Record<Status, string> = {

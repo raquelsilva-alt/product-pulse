@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { DashboardScreen } from "@/screens/dashboard/DashboardScreen";
 import { parseStateParam, type DataState } from "@/components/states";
+import { dashboardQueryOptions } from "@/lib/queries";
 
 export const Route = createFileRoute("/")({
   validateSearch: (s: Record<string, unknown>) => ({
@@ -16,6 +17,15 @@ export const Route = createFileRoute("/")({
       },
     ],
   }),
+  loader: ({ context }) => {
+    context.queryClient.ensureQueryData(dashboardQueryOptions());
+  },
+  errorComponent: ({ error }) => (
+    <div className="p-10 text-sm text-red-600">Error: {String(error)}</div>
+  ),
+  notFoundComponent: () => (
+    <div className="p-10 text-sm text-neutral-600">Not found.</div>
+  ),
   component: DashboardRoute,
 });
 

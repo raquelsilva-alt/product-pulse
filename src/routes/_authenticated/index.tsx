@@ -1,7 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate as useNav } from "@tanstack/react-router";
 import { DashboardScreen } from "@/screens/dashboard/DashboardScreen";
 import { parseStateParam, type DataState } from "@/components/states";
 import { dashboardQueryOptions } from "@/lib/queries";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/_authenticated/")({
   validateSearch: (s: Record<string, unknown>) => ({
@@ -32,6 +34,23 @@ export const Route = createFileRoute("/_authenticated/")({
 function DashboardRoute() {
   const { state } = Route.useSearch();
   const navigate = Route.useNavigate();
+  const topNav = useNav();
+  const queryClient = useQueryClient();
+  const ctx = Route.useRouteContext() as { user?: { email?: string | null } };
+  const userEmail = ctx.user?.email ?? "";
   const onRetry = () => navigate({ search: { state: "ready" as DataState } });
-  return <DashboardScreen state={state} onRetry={onRetry} />;
+  const onSignOut = async () => {
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    await supabase.auth.signOut();
+    topNav({ to: "/auth", replace: true });
+  };
+  return (
+    <DashboardScreen
+      state={state}
+      onRetry={onRetry}
+      userEmail={userEmail}
+      onSignOut={onSignOut}
+    />
+  );
 }

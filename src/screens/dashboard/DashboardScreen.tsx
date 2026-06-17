@@ -34,9 +34,11 @@ import {
 export type DashboardScreenProps = {
   state: DataState;
   onRetry: () => void;
+  userEmail?: string;
+  onSignOut?: () => void;
 };
 
-export function DashboardScreen({ state, onRetry }: DashboardScreenProps) {
+export function DashboardScreen({ state, onRetry, userEmail, onSignOut }: DashboardScreenProps) {
   const { data } = useSuspenseQuery(dashboardQueryOptions());
   const { kpis, traffic, pipeline, useCases, roadmap, forecast, fieldSignals } = data;
   const maxUseCase = Math.max(1, ...useCases.map((u) => u.count));

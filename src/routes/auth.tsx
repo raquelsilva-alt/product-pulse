@@ -7,7 +7,14 @@ export const Route = createFileRoute("/auth")({
     flash: typeof s.flash === "string" ? s.flash : undefined,
   }),
   head: () => ({
-    meta: [{ title: "Sign in · Measure it" }],
+    meta: [
+      { title: "Sign in · Measure it" },
+      { name: "description", content: "Sign in to Measure it — your AI Operations Platform for product health dashboards." },
+      { property: "og:title", content: "Sign in · Measure it" },
+      { property: "og:description", content: "Sign in to Measure it — your AI Operations Platform for product health dashboards." },
+      { property: "og:url", content: "/auth" },
+    ],
+    links: [{ rel: "canonical", href: "/auth" }],
   }),
   beforeLoad: async () => {
     if (typeof window === "undefined") return;

@@ -21,7 +21,11 @@ export const Route = createFileRoute("/_authenticated/")({
         content:
           "Measure it · AI Operations Platform — Product Health Dashboard. Traffic, pipeline, use cases, roadmap and Q3 2026 forecast in one view.",
       },
+      { property: "og:title", content: "Measure it · AI Operations Platform — Product Health Dashboard" },
+      { property: "og:description", content: "Measure it · AI Operations Platform — Product Health Dashboard. Traffic, pipeline, use cases, roadmap and Q3 2026 forecast in one view." },
+      { property: "og:url", content: "/" },
     ],
+    links: [{ rel: "canonical", href: "/" }],
   }),
   // Prime the cache without awaiting so the component can render its own
   // loading state via useQuery's pending flag.

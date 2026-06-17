@@ -138,7 +138,7 @@ export function DashboardScreen({
               {state === "loading" ? (
                 <SkeletonLine className="mt-2 h-3 w-24" />
               ) : state === "error" ? (
-                <CachedBadge onRetry={onRetry} />
+                <CachedBadge onRetry={onRetry} date={cachedAt} />
               ) : (
                 <p className="mt-2 text-xs text-emerald-600">↑ {k.delta}</p>
               )}

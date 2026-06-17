@@ -347,37 +347,47 @@ export function DashboardScreen({
           <h2 className="mb-4 text-[11px] font-medium uppercase tracking-[0.15em] text-neutral-500">
             Product roadmap — Q2–Q4 2026
           </h2>
-          <div className="grid grid-cols-3 gap-6">
-            {roadmap.map((col) => (
-              <div key={col.quarter}>
-                <div className="mb-3 flex items-center gap-2 text-xs text-neutral-700">
-                  <span className={`h-2 w-2 rounded-full ${col.dot}`} />
-                  <span className="font-medium">{col.quarter}</span>
-                  {col.badge && (
-                    <span className="rounded-sm border border-emerald-200 bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-emerald-700">
-                      {col.badge}
-                    </span>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  {col.items.map((it) => (
-                    <div
-                      key={it.title}
-                      className={`rounded-sm border border-neutral-200 border-l-2 ${ROAD_EDGE[it.status]} bg-white px-3 py-2.5`}
-                    >
-                      <p className="text-sm font-medium text-neutral-900">{it.title}</p>
-                      <div className="mt-1.5 flex items-center gap-2">
-                        <RoadStatusBadge status={it.status} />
-                        <span className="text-[10px] font-medium uppercase tracking-wider text-neutral-400">
-                          {it.tag}
-                        </span>
+          {state === "loading" ? (
+            <BarChartSkeleton height={180} rows={4} />
+          ) : state === "error" ? (
+            <ErrorMessage onRetry={onRetry}>
+              Couldn't load roadmap. Check your connection and try again.
+            </ErrorMessage>
+          ) : state === "empty" || roadmap.every((c) => c.items.length === 0) ? (
+            <EmptyMessage>No roadmap items yet.</EmptyMessage>
+          ) : (
+            <div className="grid grid-cols-3 gap-6">
+              {roadmap.map((col) => (
+                <div key={col.quarter}>
+                  <div className="mb-3 flex items-center gap-2 text-xs text-neutral-700">
+                    <span className={`h-2 w-2 rounded-full ${col.dot}`} />
+                    <span className="font-medium">{col.quarter}</span>
+                    {col.badge && (
+                      <span className="rounded-sm border border-emerald-200 bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-emerald-700">
+                        {col.badge}
+                      </span>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    {col.items.map((it) => (
+                      <div
+                        key={it.title}
+                        className={`rounded-sm border border-neutral-200 border-l-2 ${ROAD_EDGE[it.status]} bg-white px-3 py-2.5`}
+                      >
+                        <p className="text-sm font-medium text-neutral-900">{it.title}</p>
+                        <div className="mt-1.5 flex items-center gap-2">
+                          <RoadStatusBadge status={it.status} />
+                          <span className="text-[10px] font-medium uppercase tracking-wider text-neutral-400">
+                            {it.tag}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </section>
 
         <section className="mb-6 rounded-md border border-amber-200 bg-amber-50/40 p-5">

@@ -131,7 +131,7 @@ async function fetchDashboard(): Promise<DashboardData> {
 
 export const dashboardQueryOptions = () =>
   queryOptions({
-    queryKey: ["dashboard", DEMO_USER_ID],
+    queryKey: ["dashboard"],
     queryFn: fetchDashboard,
   });
 
@@ -139,7 +139,6 @@ async function fetchUseCases(): Promise<UseCase[]> {
   const r = await supabase
     .from("use_cases")
     .select("*")
-    .eq("user_id", DEMO_USER_ID)
     .order("sort_order");
   if (r.error) throw new Error(r.error.message);
   return (r.data ?? []).map(mapUseCase);
@@ -147,7 +146,7 @@ async function fetchUseCases(): Promise<UseCase[]> {
 
 export const useCasesQueryOptions = () =>
   queryOptions({
-    queryKey: ["use_cases", DEMO_USER_ID],
+    queryKey: ["use_cases"],
     queryFn: fetchUseCases,
   });
 

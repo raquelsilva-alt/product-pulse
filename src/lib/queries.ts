@@ -84,15 +84,16 @@ const ROADMAP_META: Record<string, { badge: string; dot: string }> = {
 };
 
 async function fetchDashboard(): Promise<DashboardData> {
+  // RLS scopes every row to auth.uid(); no client-side user_id filter needed.
   const [kpis, traffic, pipeline, useCases, roadmap, forecast, signals] =
     await Promise.all([
-      supabase.from("kpis").select("label,value,delta,sort_order").eq("user_id", DEMO_USER_ID).order("sort_order"),
-      supabase.from("traffic_monthly").select("month,actual,forecast,sort_order").eq("user_id", DEMO_USER_ID).order("sort_order"),
-      supabase.from("pipeline_stages").select("stage,value,sort_order").eq("user_id", DEMO_USER_ID).order("sort_order"),
-      supabase.from("use_cases").select("*").eq("user_id", DEMO_USER_ID).order("sort_order"),
-      supabase.from("roadmap_items").select("quarter,title,status,tag,sort_order").eq("user_id", DEMO_USER_ID).order("sort_order"),
-      supabase.from("forecast_summary").select("label,value,sub,sort_order").eq("user_id", DEMO_USER_ID).order("sort_order"),
-      supabase.from("field_signals").select("quote,attribution,sort_order").eq("user_id", DEMO_USER_ID).order("sort_order"),
+      supabase.from("kpis").select("label,value,delta,sort_order").order("sort_order"),
+      supabase.from("traffic_monthly").select("month,actual,forecast,sort_order").order("sort_order"),
+      supabase.from("pipeline_stages").select("stage,value,sort_order").order("sort_order"),
+      supabase.from("use_cases").select("*").order("sort_order"),
+      supabase.from("roadmap_items").select("quarter,title,status,tag,sort_order").order("sort_order"),
+      supabase.from("forecast_summary").select("label,value,sub,sort_order").order("sort_order"),
+      supabase.from("field_signals").select("quote,attribution,sort_order").order("sort_order"),
     ]);
 
   for (const r of [kpis, traffic, pipeline, useCases, roadmap, forecast, signals]) {
@@ -130,7 +131,7 @@ async function fetchDashboard(): Promise<DashboardData> {
 
 export const dashboardQueryOptions = () =>
   queryOptions({
-    queryKey: ["dashboard", DEMO_USER_ID],
+    queryKey: ["dashboard"],
     queryFn: fetchDashboard,
   });
 
@@ -138,7 +139,6 @@ async function fetchUseCases(): Promise<UseCase[]> {
   const r = await supabase
     .from("use_cases")
     .select("*")
-    .eq("user_id", DEMO_USER_ID)
     .order("sort_order");
   if (r.error) throw new Error(r.error.message);
   return (r.data ?? []).map(mapUseCase);
@@ -146,7 +146,7 @@ async function fetchUseCases(): Promise<UseCase[]> {
 
 export const useCasesQueryOptions = () =>
   queryOptions({
-    queryKey: ["use_cases", DEMO_USER_ID],
+    queryKey: ["use_cases"],
     queryFn: fetchUseCases,
   });
 

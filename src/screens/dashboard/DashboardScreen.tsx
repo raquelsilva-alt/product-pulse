@@ -1,7 +1,6 @@
-// Dashboard screen — pure presentation. Data fetched via TanStack Query from Supabase.
+// Dashboard screen — pure presentation. Data + state are passed in by the route.
 
 import { Link } from "@tanstack/react-router";
-import { useSuspenseQuery } from "@tanstack/react-query";
 import {
   Area,
   AreaChart,
@@ -17,12 +16,13 @@ import {
   BarChartSkeleton,
   CachedBadge,
   ChartSkeleton,
+  EmptyMessage,
   ErrorMessage,
   SkeletonLine,
   StateToggle,
   type DataState,
 } from "@/components/states";
-import { dashboardQueryOptions, slugify } from "@/lib/queries";
+import { slugify, type DashboardData } from "@/lib/queries";
 import {
   GrowthBadge,
   MiniSparkline,
@@ -31,16 +31,60 @@ import {
   StatusBadge,
 } from "./badges";
 
+// Placeholder shape rendered during loading/error so layout stays stable.
+const PLACEHOLDER_DATA: DashboardData = {
+  kpis: [
+    { label: "Monthly requests", value: "—", delta: "—" },
+    { label: "Active users", value: "—", delta: "—" },
+    { label: "Resolution rate", value: "—", delta: "—" },
+    { label: "Health score", value: "—", delta: "—" },
+  ],
+  traffic: [],
+  pipeline: [
+    { stage: "Signed up", value: 0 },
+    { stage: "Activated", value: 0 },
+    { stage: "Engaged", value: 0 },
+    { stage: "Power user", value: 0 },
+    { stage: "Champion", value: 0 },
+  ],
+  useCases: [],
+  roadmap: [
+    { quarter: "Q2 · 2026", badge: "CURRENT", dot: "bg-sky-500", items: [] },
+    { quarter: "Q3 · 2026", badge: "", dot: "bg-amber-600", items: [] },
+    { quarter: "Q4 · 2026", badge: "", dot: "bg-neutral-400", items: [] },
+  ],
+  forecast: [
+    { label: "—", value: "—", sub: "—" },
+    { label: "—", value: "—", sub: "—" },
+    { label: "—", value: "—", sub: "—" },
+    { label: "—", value: "—", sub: "—" },
+  ],
+  fieldSignals: [],
+};
+
 export type DashboardScreenProps = {
   state: DataState;
+  urlState: DataState | undefined;
+  data: DashboardData | undefined;
+  cachedAt?: string;
   onRetry: () => void;
   userEmail?: string;
   onSignOut?: () => void;
 };
 
-export function DashboardScreen({ state, onRetry, userEmail, onSignOut }: DashboardScreenProps) {
-  const { data } = useSuspenseQuery(dashboardQueryOptions());
-  const { kpis, traffic, pipeline, useCases, roadmap, forecast, fieldSignals } = data;
+export function DashboardScreen({
+  state,
+  urlState,
+  data,
+  cachedAt,
+  onRetry,
+  userEmail,
+  onSignOut,
+}: DashboardScreenProps) {
+  // Placeholder shape keeps the layout intact for loading / error / empty;
+  // sections render their own skeleton/error/empty overlays on top.
+  const view = state === "ready" ? (data ?? PLACEHOLDER_DATA) : PLACEHOLDER_DATA;
+  const { kpis, traffic, pipeline, useCases, roadmap, forecast, fieldSignals } = view;
   const maxUseCase = Math.max(1, ...useCases.map((u) => u.count));
 
   return (
@@ -57,7 +101,7 @@ export function DashboardScreen({ state, onRetry, userEmail, onSignOut }: Dashbo
               </h1>
             </div>
             <div className="flex items-center gap-4 text-xs text-neutral-500">
-              <StateToggle basePath="/" current={state} />
+              <StateToggle basePath="/" current={urlState} />
               <span>Q2 2026 · Jun 4</span>
               <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-medium uppercase tracking-wider text-emerald-700">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
@@ -88,7 +132,7 @@ export function DashboardScreen({ state, onRetry, userEmail, onSignOut }: Dashbo
               <p className="text-xs text-neutral-500">{k.label}</p>
               {state === "loading" ? (
                 <SkeletonLine className="mt-2 h-7 w-20" />
-              ) : state === "error" ? (
+              ) : state === "error" || state === "empty" ? (
                 <p className="mt-2 text-3xl font-semibold tracking-tight text-neutral-400">—</p>
               ) : (
                 <p className="mt-2 text-3xl font-semibold tracking-tight">{k.value}</p>
@@ -96,7 +140,9 @@ export function DashboardScreen({ state, onRetry, userEmail, onSignOut }: Dashbo
               {state === "loading" ? (
                 <SkeletonLine className="mt-2 h-3 w-24" />
               ) : state === "error" ? (
-                <CachedBadge onRetry={onRetry} />
+                <CachedBadge onRetry={onRetry} date={cachedAt} />
+              ) : state === "empty" ? (
+                <p className="mt-2 text-xs text-neutral-400">No data yet</p>
               ) : (
                 <p className="mt-2 text-xs text-emerald-600">↑ {k.delta}</p>
               )}
@@ -130,8 +176,10 @@ export function DashboardScreen({ state, onRetry, userEmail, onSignOut }: Dashbo
               <ChartSkeleton height={320} />
             ) : state === "error" ? (
               <ErrorMessage onRetry={onRetry}>
-                Data connection interrupted. Last successful sync: Jun 3, 2026.
+                Couldn't load traffic data. Check your connection and try again.
               </ErrorMessage>
+            ) : state === "empty" ? (
+              <EmptyMessage>No traffic recorded yet for this period.</EmptyMessage>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={traffic} margin={{ top: 10, right: 20, bottom: 0, left: -10 }}>
@@ -192,8 +240,10 @@ export function DashboardScreen({ state, onRetry, userEmail, onSignOut }: Dashbo
                 <BarChartSkeleton height={230} rows={5} />
               ) : state === "error" ? (
                 <ErrorMessage onRetry={onRetry}>
-                  Data connection interrupted. Last successful sync: Jun 3, 2026.
+                  Couldn't load pipeline data. Check your connection and try again.
                 </ErrorMessage>
+              ) : state === "empty" ? (
+                <EmptyMessage>No pipeline data yet.</EmptyMessage>
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={pipeline} layout="vertical" margin={{ top: 0, right: 20, bottom: 0, left: 10 }}>
@@ -231,62 +281,65 @@ export function DashboardScreen({ state, onRetry, userEmail, onSignOut }: Dashbo
 
           <div className="col-span-2 rounded-md border border-neutral-200 bg-white p-5">
             <h2 className="mb-4 text-[11px] font-medium uppercase tracking-[0.15em] text-neutral-500">
-              Use case activity — {useCases.length} total · monthly requests
+              Use case activity — {state === "ready" ? useCases.length : "—"} total · monthly requests
             </h2>
-            <div className="space-y-2">
-              {useCases.map((u) => {
-                const isLoading = state === "loading";
-                const isEmpty = state === "empty" || u.count === 0;
-                const pct = (u.count / maxUseCase) * 100;
-                const isBreakout = u.name === "Code review assist" && !isLoading && !isEmpty;
-                return (
-                  <Link
-                    key={u.id}
-                    to="/use-case/$slug"
-                    params={{ slug: slugify(u.name) }}
-                    className={`grid grid-cols-[180px_60px_1fr_60px_86px] items-center gap-3 rounded px-1 py-1 text-xs transition-colors hover:bg-neutral-100 ${
-                      isBreakout ? "bg-amber-50/60 hover:bg-amber-100/60" : ""
-                    }`}
-                  >
-                    <span className="truncate text-neutral-800">{u.name}</span>
-                    <StatusBadge status={u.status} />
-                    {isLoading ? (
-                      <>
-                        <SkeletonLine className="h-1.5 w-full" />
-                        <SkeletonLine className="ml-auto h-3 w-12" />
-                        <SkeletonLine className="ml-auto h-4 w-20" />
-                      </>
-                    ) : isEmpty ? (
-                      <span className="col-span-3 text-right text-neutral-400">
-                        No activity this period
-                      </span>
-                    ) : (
-                      <>
-                        <div className="h-1.5 w-full rounded-full bg-neutral-100">
-                          <div
-                            className={`h-full rounded-full ${
-                              u.status === "Live"
-                                ? "bg-sky-500"
-                                : u.status === "Beta"
-                                  ? "bg-amber-500"
-                                  : "bg-neutral-300"
-                            }`}
-                            style={{ width: `${pct}%` }}
-                          />
-                        </div>
-                        <span className="text-right font-medium text-neutral-900">
-                          {u.count.toLocaleString()}
+            {state === "loading" ? (
+              <BarChartSkeleton height={230} rows={6} />
+            ) : state === "error" ? (
+              <ErrorMessage onRetry={onRetry}>
+                Couldn't load use case activity. Check your connection and try again.
+              </ErrorMessage>
+            ) : state === "empty" || useCases.length === 0 ? (
+              <EmptyMessage>No use cases yet. Once you log activity, it appears here.</EmptyMessage>
+            ) : (
+              <div className="space-y-2">
+                {useCases.map((u) => {
+                  const isEmpty = u.count === 0;
+                  const pct = (u.count / maxUseCase) * 100;
+                  const isBreakout = u.name === "Code review assist" && !isEmpty;
+                  return (
+                    <Link
+                      key={u.id}
+                      to="/use-case/$slug"
+                      params={{ slug: slugify(u.name) }}
+                      className={`grid grid-cols-[180px_60px_1fr_60px_86px] items-center gap-3 rounded px-1 py-1 text-xs transition-colors hover:bg-neutral-100 ${
+                        isBreakout ? "bg-amber-50/60 hover:bg-amber-100/60" : ""
+                      }`}
+                    >
+                      <span className="truncate text-neutral-800">{u.name}</span>
+                      <StatusBadge status={u.status} />
+                      {isEmpty ? (
+                        <span className="col-span-3 text-right text-neutral-400">
+                          No activity this period
                         </span>
-                        <div className="flex items-center justify-end gap-1.5">
-                          <GrowthBadge growth={u.growth} isNew={u.isNew} />
-                          <MiniSparkline data={u.trend} />
-                        </div>
-                      </>
-                    )}
-                  </Link>
-                );
-              })}
-            </div>
+                      ) : (
+                        <>
+                          <div className="h-1.5 w-full rounded-full bg-neutral-100">
+                            <div
+                              className={`h-full rounded-full ${
+                                u.status === "Live"
+                                  ? "bg-sky-500"
+                                  : u.status === "Beta"
+                                    ? "bg-amber-500"
+                                    : "bg-neutral-300"
+                              }`}
+                              style={{ width: `${pct}%` }}
+                            />
+                          </div>
+                          <span className="text-right font-medium text-neutral-900">
+                            {u.count.toLocaleString()}
+                          </span>
+                          <div className="flex items-center justify-end gap-1.5">
+                            <GrowthBadge growth={u.growth} isNew={u.isNew} />
+                            <MiniSparkline data={u.trend} />
+                          </div>
+                        </>
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </section>
 
@@ -294,37 +347,47 @@ export function DashboardScreen({ state, onRetry, userEmail, onSignOut }: Dashbo
           <h2 className="mb-4 text-[11px] font-medium uppercase tracking-[0.15em] text-neutral-500">
             Product roadmap — Q2–Q4 2026
           </h2>
-          <div className="grid grid-cols-3 gap-6">
-            {roadmap.map((col) => (
-              <div key={col.quarter}>
-                <div className="mb-3 flex items-center gap-2 text-xs text-neutral-700">
-                  <span className={`h-2 w-2 rounded-full ${col.dot}`} />
-                  <span className="font-medium">{col.quarter}</span>
-                  {col.badge && (
-                    <span className="rounded-sm border border-emerald-200 bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-emerald-700">
-                      {col.badge}
-                    </span>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  {col.items.map((it) => (
-                    <div
-                      key={it.title}
-                      className={`rounded-sm border border-neutral-200 border-l-2 ${ROAD_EDGE[it.status]} bg-white px-3 py-2.5`}
-                    >
-                      <p className="text-sm font-medium text-neutral-900">{it.title}</p>
-                      <div className="mt-1.5 flex items-center gap-2">
-                        <RoadStatusBadge status={it.status} />
-                        <span className="text-[10px] font-medium uppercase tracking-wider text-neutral-400">
-                          {it.tag}
-                        </span>
+          {state === "loading" ? (
+            <BarChartSkeleton height={180} rows={4} />
+          ) : state === "error" ? (
+            <ErrorMessage onRetry={onRetry}>
+              Couldn't load roadmap. Check your connection and try again.
+            </ErrorMessage>
+          ) : state === "empty" || roadmap.every((c) => c.items.length === 0) ? (
+            <EmptyMessage>No roadmap items yet.</EmptyMessage>
+          ) : (
+            <div className="grid grid-cols-3 gap-6">
+              {roadmap.map((col) => (
+                <div key={col.quarter}>
+                  <div className="mb-3 flex items-center gap-2 text-xs text-neutral-700">
+                    <span className={`h-2 w-2 rounded-full ${col.dot}`} />
+                    <span className="font-medium">{col.quarter}</span>
+                    {col.badge && (
+                      <span className="rounded-sm border border-emerald-200 bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-emerald-700">
+                        {col.badge}
+                      </span>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    {col.items.map((it) => (
+                      <div
+                        key={it.title}
+                        className={`rounded-sm border border-neutral-200 border-l-2 ${ROAD_EDGE[it.status]} bg-white px-3 py-2.5`}
+                      >
+                        <p className="text-sm font-medium text-neutral-900">{it.title}</p>
+                        <div className="mt-1.5 flex items-center gap-2">
+                          <RoadStatusBadge status={it.status} />
+                          <span className="text-[10px] font-medium uppercase tracking-wider text-neutral-400">
+                            {it.tag}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </section>
 
         <section className="mb-6 rounded-md border border-amber-200 bg-amber-50/40 p-5">
@@ -337,10 +400,22 @@ export function DashboardScreen({ state, onRetry, userEmail, onSignOut }: Dashbo
                 <p className="text-[10px] font-medium uppercase tracking-wider text-neutral-500">
                   {f.label}
                 </p>
-                <p className="mt-2 text-2xl font-semibold tracking-tight text-amber-900">
-                  {f.value}
-                </p>
-                <p className="mt-1 text-xs text-neutral-500">{f.sub}</p>
+                {state === "loading" ? (
+                  <SkeletonLine className="mt-2 h-6 w-16" />
+                ) : state === "error" || state === "empty" ? (
+                  <p className="mt-2 text-2xl font-semibold tracking-tight text-neutral-400">—</p>
+                ) : (
+                  <p className="mt-2 text-2xl font-semibold tracking-tight text-amber-900">
+                    {f.value}
+                  </p>
+                )}
+                {state === "loading" ? (
+                  <SkeletonLine className="mt-2 h-3 w-20" />
+                ) : state === "error" || state === "empty" ? (
+                  <p className="mt-1 text-xs text-neutral-400">—</p>
+                ) : (
+                  <p className="mt-1 text-xs text-neutral-500">{f.sub}</p>
+                )}
               </div>
             ))}
           </div>
@@ -350,17 +425,27 @@ export function DashboardScreen({ state, onRetry, userEmail, onSignOut }: Dashbo
           <h2 className="mb-4 text-[11px] font-medium uppercase tracking-[0.15em] text-neutral-500">
             Field signals
           </h2>
-          <div className="grid grid-cols-3 gap-4 text-sm">
-            {fieldSignals.map((s) => (
-              <blockquote
-                key={s.a}
-                className="border-l-2 border-sky-300 bg-neutral-50/60 px-4 py-3"
-              >
-                <p className="italic text-neutral-700">"{s.q}"</p>
-                <footer className="mt-2 text-xs text-neutral-500">— {s.a}</footer>
-              </blockquote>
-            ))}
-          </div>
+          {state === "loading" ? (
+            <BarChartSkeleton height={120} rows={3} />
+          ) : state === "error" ? (
+            <ErrorMessage onRetry={onRetry}>
+              Couldn't load field signals. Check your connection and try again.
+            </ErrorMessage>
+          ) : state === "empty" || fieldSignals.length === 0 ? (
+            <EmptyMessage>No field signals captured yet.</EmptyMessage>
+          ) : (
+            <div className="grid grid-cols-3 gap-4 text-sm">
+              {fieldSignals.map((s) => (
+                <blockquote
+                  key={s.a}
+                  className="border-l-2 border-sky-300 bg-neutral-50/60 px-4 py-3"
+                >
+                  <p className="italic text-neutral-700">"{s.q}"</p>
+                  <footer className="mt-2 text-xs text-neutral-500">— {s.a}</footer>
+                </blockquote>
+              ))}
+            </div>
+          )}
         </section>
 
         <footer className="border-t border-neutral-200 pt-4 text-center text-xs text-neutral-400">

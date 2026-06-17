@@ -1,0 +1,9 @@
+# Measure it
+
+> An AI Operations Platform with a Product Health Dashboard. Authenticated users track KPIs, traffic trends, pipeline funnel, use cases, product roadmap, and quarterly forecasts.
+
+## Pages
+
+- [Dashboard](/): Product Health Dashboard — KPI cards, traffic trends, pipeline funnel, use cases, roadmap, and Q3 2026 forecast.
+- [Use case detail](/use-case/$slug): Drill-down into a single use case with status, impact, owner, and timeline.
+- [Sign in](/auth): Email and password sign-in and sign-up page. Redirects authenticated users to the dashboard.

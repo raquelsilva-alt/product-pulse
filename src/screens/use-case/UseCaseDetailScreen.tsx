@@ -1,7 +1,6 @@
-// Use Case Detail screen — fetches via TanStack Query, finds use case by slug.
+// Use Case Detail screen — pure presentation. Data + state are passed in by the route.
 
-import { Link, notFound } from "@tanstack/react-router";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import {
   Area,
   AreaChart,
@@ -11,7 +10,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { monthlyTrend, slugify, useCasesQueryOptions } from "@/lib/queries";
+import { monthlyTrend, type UseCase } from "@/lib/queries";
 import {
   ChartSkeleton,
   EmptyMessage,
@@ -22,36 +21,59 @@ import {
 } from "@/components/states";
 import { StatusBadge } from "./badges";
 
+const PLACEHOLDER_UC: UseCase = {
+  id: "placeholder",
+  name: "—",
+  status: "Live",
+  count: 0,
+  growth: "",
+  isNew: false,
+  trend: [0, 0, 0],
+  category: "—",
+  activeUsers: 0,
+  resolutionRate: 0,
+  departments: [
+    { name: "—", share: 0 },
+    { name: "—", share: 0 },
+    { name: "—", share: 0 },
+  ],
+};
+
 export type UseCaseDetailScreenProps = {
   slug: string;
   state: DataState;
+  urlState: DataState | undefined;
+  uc: UseCase | undefined;
   onRetry: () => void;
 };
 
-export function UseCaseDetailScreen({ slug, state, onRetry }: UseCaseDetailScreenProps) {
-  const { data: useCases } = useSuspenseQuery(useCasesQueryOptions());
-  const uc = useCases.find((u) => slugify(u.name) === slug);
-  if (!uc) throw notFound();
+export function UseCaseDetailScreen({
+  slug: _slug,
+  state,
+  urlState,
+  uc,
+  onRetry,
+}: UseCaseDetailScreenProps) {
+  const view = state === "ready" && uc ? uc : PLACEHOLDER_UC;
 
   const fetchFailed = state === "error";
   const loading = state === "loading";
   const empty = state === "empty";
 
-  const data = monthlyTrend(uc);
+  const data = monthlyTrend(view);
   const first = data[0].actual;
   const last = data[data.length - 1].actual;
-  const mom = data[data.length - 2].actual
-    ? Math.round(((last - data[data.length - 2].actual) / data[data.length - 2].actual) * 100)
-    : 0;
+  const prev = data[data.length - 2].actual;
+  const mom = prev ? Math.round(((last - prev) / prev) * 100) : 0;
 
   const cards = [
-    { label: "Monthly requests", value: uc.count.toLocaleString(), sub: `vs ${first.toLocaleString()} 6 mo ago` },
-    { label: "MoM growth", value: uc.isNew ? "New" : `${mom >= 0 ? "+" : ""}${mom}%`, sub: "month over month" },
-    { label: "Active users", value: uc.activeUsers.toString(), sub: "on this use case" },
-    { label: "Resolution rate", value: `${uc.resolutionRate}%`, sub: "auto-resolved" },
+    { label: "Monthly requests", value: view.count.toLocaleString(), sub: `vs ${first.toLocaleString()} 6 mo ago` },
+    { label: "MoM growth", value: view.isNew ? "New" : `${mom >= 0 ? "+" : ""}${mom}%`, sub: "month over month" },
+    { label: "Active users", value: view.activeUsers.toString(), sub: "on this use case" },
+    { label: "Resolution rate", value: `${view.resolutionRate}%`, sub: "auto-resolved" },
   ];
 
-  const maxDept = Math.max(1, ...uc.departments.map((d) => d.share));
+  const maxDept = Math.max(1, ...view.departments.map((d) => d.share));
 
   return (
     <div className="min-h-screen bg-neutral-50 font-sans text-neutral-900 tabular-nums">
@@ -63,7 +85,7 @@ export function UseCaseDetailScreen({ slug, state, onRetry }: UseCaseDetailScree
           >
             ← Back to dashboard
           </Link>
-          <StateToggle basePath="/use-case/$slug" current={state} />
+          <StateToggle basePath="/use-case/$slug" current={urlState} />
         </div>
 
         <header className="mb-6 border-b border-neutral-200 pb-5">
@@ -73,11 +95,11 @@ export function UseCaseDetailScreen({ slug, state, onRetry }: UseCaseDetailScree
                 Use case detail
               </p>
               <h1 className="mt-1 flex items-center gap-3 text-2xl font-semibold tracking-tight text-neutral-900">
-                {uc.name}
-                <StatusBadge status={uc.status} />
+                {loading ? <SkeletonLine className="h-7 w-48" /> : view.name}
+                {!loading && <StatusBadge status={view.status} />}
               </h1>
               <p className="mt-2 text-xs text-neutral-500">
-                Category · <span className="text-neutral-700">{uc.category}</span>
+                Category · <span className="text-neutral-700">{view.category}</span>
               </p>
             </div>
           </div>
@@ -94,8 +116,13 @@ export function UseCaseDetailScreen({ slug, state, onRetry }: UseCaseDetailScree
                 </>
               ) : fetchFailed ? (
                 <ErrorMessage onRetry={onRetry}>
-                  Unable to load use case data. Check your connection and try again.
+                  Couldn't load use case data. Check your connection and try again.
                 </ErrorMessage>
+              ) : empty ? (
+                <>
+                  <p className="mt-2 text-3xl font-semibold tracking-tight text-neutral-400">—</p>
+                  <p className="mt-2 text-xs text-neutral-400">No data yet</p>
+                </>
               ) : (
                 <>
                   <p className="mt-2 text-3xl font-semibold tracking-tight">{c.value}</p>
@@ -122,7 +149,7 @@ export function UseCaseDetailScreen({ slug, state, onRetry }: UseCaseDetailScree
               <ChartSkeleton height={320} />
             ) : fetchFailed ? (
               <ErrorMessage onRetry={onRetry}>
-                Unable to load use case data. Check your connection and try again.
+                Couldn't load use case data. Check your connection and try again.
               </ErrorMessage>
             ) : empty ? (
               <EmptyMessage>
@@ -168,9 +195,9 @@ export function UseCaseDetailScreen({ slug, state, onRetry }: UseCaseDetailScree
             Top user departments
           </h2>
           <div className="space-y-2">
-            {uc.departments.map((d) => (
+            {view.departments.map((d, i) => (
               <div
-                key={d.name}
+                key={`${d.name}-${i}`}
                 className="grid grid-cols-[120px_1fr_48px] items-center gap-3 text-xs"
               >
                 <span className="text-neutral-700">{d.name}</span>

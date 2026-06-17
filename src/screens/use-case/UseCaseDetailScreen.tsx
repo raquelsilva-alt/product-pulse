@@ -1,7 +1,7 @@
-// Use Case Detail screen — pure presentation.
-// Route file at src/routes/use-case.$slug.tsx loads data and renders this.
+// Use Case Detail screen — fetches via TanStack Query, finds use case by slug.
 
-import { Link } from "@tanstack/react-router";
+import { Link, notFound } from "@tanstack/react-router";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import {
   Area,
   AreaChart,
@@ -11,7 +11,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { monthlyTrend, type UseCase } from "@/data/useCases";
+import { monthlyTrend, slugify, useCasesQueryOptions } from "@/lib/queries";
 import {
   ChartSkeleton,
   EmptyMessage,
@@ -23,12 +23,16 @@ import {
 import { StatusBadge } from "./badges";
 
 export type UseCaseDetailScreenProps = {
-  uc: UseCase;
+  slug: string;
   state: DataState;
   onRetry: () => void;
 };
 
-export function UseCaseDetailScreen({ uc, state, onRetry }: UseCaseDetailScreenProps) {
+export function UseCaseDetailScreen({ slug, state, onRetry }: UseCaseDetailScreenProps) {
+  const { data: useCases } = useSuspenseQuery(useCasesQueryOptions());
+  const uc = useCases.find((u) => slugify(u.name) === slug);
+  if (!uc) throw notFound();
+
   const fetchFailed = state === "error";
   const loading = state === "loading";
   const empty = state === "empty";
@@ -47,7 +51,7 @@ export function UseCaseDetailScreen({ uc, state, onRetry }: UseCaseDetailScreenP
     { label: "Resolution rate", value: `${uc.resolutionRate}%`, sub: "auto-resolved" },
   ];
 
-  const maxDept = Math.max(...uc.departments.map((d) => d.share));
+  const maxDept = Math.max(1, ...uc.departments.map((d) => d.share));
 
   return (
     <div className="min-h-screen bg-neutral-50 font-sans text-neutral-900 tabular-nums">
